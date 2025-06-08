@@ -9,13 +9,12 @@ CFLAGS = -Wall -Wextra -std=c99 -g
 # Links to SDL2 library, expands to -lSDL2
 LIBS = `pkg-config --libs sdl2`
 # Includes SDL2 headers, expands to -I/usr/include/SDL2
-INCLUDES = `pkg-config --cflags sdl2` -Iincludes
+INCLUDES = `pkg-config --cflags sdl2`
 
 # Directory structure
 SRCDIR = src
 BUILDDIR = build
 BINDIR = bin
-INCLUDEDIR = includes
 
 # Name of the executable.
 TARGET = $(BINDIR)/nes
