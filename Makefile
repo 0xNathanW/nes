@@ -9,29 +9,42 @@ CFLAGS = -Wall -Wextra -std=c99 -g
 # Links to SDL2 library, expands to -lSDL2
 LIBS = `pkg-config --libs sdl2`
 # Includes SDL2 headers, expands to -I/usr/include/SDL2
-INCLUDES = `pkg-config --cflags sdl2`
+INCLUDES = `pkg-config --cflags sdl2` -Iincludes
+
+# Directory structure
+SRCDIR = src
+BUILDDIR = build
+BINDIR = bin
+INCLUDEDIR = includes
 
 # Name of the executable.
-TARGET = nes
+TARGET = $(BINDIR)/nes
 
 # Source files
-SOURCES = main.c
-# Object files are created from source files by replacing .c with .o
-OBJECTS = $(SOURCES:.c=.o)
+SOURCES = $(wildcard $(SRCDIR)/*.c)
+# Object files are created from source files by replacing .c with .o and moving to build dir
+OBJECTS = $(SOURCES:$(SRCDIR)/%.c=$(BUILDDIR)/%.o)
 
 # Default target, builds the executable when `make` is run, will run command below.
 all: $(TARGET)
 
-# Link the executable, expands to gcc main.o -o nes -lSDL2.
-$(TARGET): $(OBJECTS)
+# Create directories if they don't exist
+$(BUILDDIR):
+	mkdir -p $(BUILDDIR)
+
+$(BINDIR):
+	mkdir -p $(BINDIR)
+
+# Link the executable, expands to gcc build/main.o -o bin/nes -lSDL2.
+$(TARGET): $(OBJECTS) | $(BINDIR)
 	$(CC) $(OBJECTS) -o $(TARGET) $(LIBS)
 
 # Compile source files to object files
-%.o: %.c
+$(BUILDDIR)/%.o: $(SRCDIR)/%.c | $(BUILDDIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
-	rm -f $(OBJECTS) $(TARGET)
+	rm -rf $(BUILDDIR) $(BINDIR)
 
 rebuild: clean all
 

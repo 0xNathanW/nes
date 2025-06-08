@@ -1,5 +1,5 @@
 # Project executable
-nes
+bin/
 
 # Prerequisites
 *.d
