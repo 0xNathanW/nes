@@ -96,7 +96,7 @@ typedef struct {
 } INES_Cart;
 
 INES_Cart* load_cart(const char* path);
-void free_cart_memory(INES_Cart* cart);
+void free_cart(INES_Cart* cart);
 void print_cart_info(INES_Cart* cart);
 
 #endif

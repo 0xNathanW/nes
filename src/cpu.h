@@ -1,4 +1,9 @@
+#ifndef CPU_H
+#define CPU_H
+
 #include <stdint.h>
+#include <stdbool.h>
+#include "ines.h"
 
 /* Flags:
     Carry Flag:
@@ -39,7 +44,37 @@
     to a one.
 */
 
-struct Registers {
+#define FLAG_CARRY     0x01
+#define FLAG_ZERO      0x02
+#define FLAG_INTERRUPT 0x03
+#define FLAG_DECIMAL   0x04
+#define FLAG_BREAK     0x05
+#define FLAG_OVERFLOW  0x01
+#define FLAG_NEGATIVE  0x01
+
+/*
+Address 	Size  	  Description
+$0000 	  0x800 	  2KB of work RAM
+$0800 	  0x800 	  Mirror of $000-$7FF
+$1000 	  0x800 	  Mirror of $000-$7FF
+$1800 	  0x800 	  Mirror of $000-$7FF
+$2000 	  0x8 	    PPU Ctrl Registers
+$2008 	  0x1FF8 	  *Mirror of $2000-$2007
+$4000 	  0x20 	    Registers (Mostly APU)
+$4020 	  0x1FDF 	  Cartridge Expansion ROM
+$6000 	  0x2000 	  SRAM
+$8000 	  0x4000 	  PRG-ROM
+$C000 	  0x4000 	  PRG-ROM 
+*/
+#define RAM_SIZE 0x0800
+#define RAM_START 0x0000
+#define RAM_END 0x07FF
+#define RAM_MIRROR_END 0x1FF
+#define PPU_REGS_START 0x2000
+#define PPU_REGS_END 0x2007
+
+typedef struct {
+    // Registers:
     // The accumulator can read and write to memory.
     // It is used to store arithmetic and logic results such as addition and
     // subtraction.
@@ -63,4 +98,25 @@ struct Registers {
     // This is a 16-bit register unlike other registers which are only 8-bit in
     // length, it indicates where the processor is in the program sequence.
     uint16_t pc;
-};
+  
+    uint8_t ram[RAM_SIZE];
+    INES_Cart *cart;
+} CPU;
+
+CPU* init_cpu(INES_Cart* cart);
+void free_cpu(CPU* cpu);
+void reset_cpu(CPU* cpu);
+void step_cpu(CPU* cpu);
+
+uint8_t cpu_read_byte(CPU* cpu, uint16_t addr);
+uint16_t cpu_read_word(CPU* cpu, uint16_t addr);
+
+void cpu_write_byte(CPU* cpu, uint16_t addr, uint8_t byte);
+void cpu_write_word(CPU* cpu, uint16_t adr, uint16_t word);
+
+// Stack functions.
+// TODO: maybe need push/pop word (2 bytes)
+void stack_push(CPU* cpu, uint8_t data); 
+uint8_t stack_pop(CPU* cpu);
+
+#endif
