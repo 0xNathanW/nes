@@ -1,5 +1,7 @@
-#ifndef MEM_MAP_H
-#define MEM_MAP_H
+#ifndef BUS_H
+#define BUS_H
+
+#include <stdint.h>
 
 /*
 NES Memory Map:
@@ -12,6 +14,27 @@ $4020-$5FFF: Cartridge Expansion ROM
 $6000-$7FFF: SRAM (Save RAM)
 $8000-$FFFF: PRG-ROM (32KB)
 */
+
+/********************************************************
+_____________	0x10000
+
+PRG-ROM
+
+_____________	0x8000
+SRAM
+_____________	0x6000
+Expansion ROM
+_____________	0x4020
+
+
+IO Registers
+
+
+_____________	0x2000
+
+RAM
+_____________	0x0000
+*********************************************************/
 
 #define RAM_START         0x0000
 #define RAM_END           0x07FF
@@ -41,17 +64,22 @@ $8000-$FFFF: PRG-ROM (32KB)
 #define PRG_ROM_END       0xFFFF
 #define PRG_ROM_SIZE      0x8000
 
-// Region checking.
-#define IS_RAM_ADDR(addr)       ((addr) <= RAM_MIRROR_END)
-#define IS_PPU_ADDR(addr)       ((addr) >= PPU_START && (addr) <= PPU_MIRROR_END)
-#define IS_IO_ADDR(addr)        ((addr) >= IO_START && (addr) <= IO_END)
-#define IS_CART_ROM_ADDR(addr)  ((addr) >= EXPANSION_START && (addr) <= PRG_ROM_END)
-#define IS_EXPANSION_ADDR(addr) ((addr) >= EXPANSION_START && (addr) <= EXPANSION_END)
-#define IS_SRAM_ADDR(addr)      ((addr) >= SRAM_START && (addr) <= SRAM_END)
-#define IS_PRG_ROM_ADDR(addr)   ((addr) >= PRG_ROM_START && (addr) <= PRG_ROM_END)
-
 // Mirror address conversion.
 #define RAM_MIRROR_TO_BASE(addr)  ((addr) & 0x07FF)
 #define PPU_MIRROR_TO_BASE(addr)  (PPU_START + ((addr) & 0x0007))
+
+struct CPU_6502;
+struct INES_Cart;
+
+typedef struct Bus {
+    struct INES_Cart* cartridge;
+    struct CPU_6502* cpu;
+} Bus;
+
+void bus_init(Bus* bus);
+void bus_connect_cartridge(Bus* bus, struct INES_Cart* cartridge);
+
+void bus_write_byte(Bus* bus, uint16_t addr, uint8_t data);
+uint8_t bus_read_byte(Bus* bus, uint16_t addr);
 
 #endif

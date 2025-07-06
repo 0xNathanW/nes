@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
     }
     print_cart_info(cart);
     
-    NES* nes = create_nes(cart);
+    NES* nes = nes_create();
     if (!nes) {
         printf("error: could not create NES\n");
         free_cart(cart);
@@ -21,10 +21,9 @@ int main(int argc, char *argv[]) {
     }
 
     while (1) {
-        break;
     }
 
-    destroy_nes(nes);
+    nes_destroy(nes);
     free_cart(cart);
     return 0;     
 }

@@ -1,62 +1,50 @@
 #include "nes.h"
-#include "ines.h"
+#include "bus.h"
 #include "cpu.h"
 #include <stdlib.h>
-#include "mem_map.h"
+#include <string.h>
 
-NES* create_nes(INES_Cart* cart) {
+NES* nes_create() {
+    
     NES* nes = (NES*)malloc(sizeof(NES));
     if (!nes) {
         return NULL;
     }
-    
-    reset_cpu(&nes->cpu);
-    nes->cart = cart;
+    memset(nes, 0, sizeof(NES));
+
+    cpu_init(&nes->cpu);
+    bus_init(&nes->bus);
+
+    // Connect the bus to components.
+    nes->bus.cpu = &nes->cpu;
+    nes->bus.cartridge = nes->cartridge;
+
+    nes->cpu.bus = &nes->bus;
+    nes->bus.cpu = &nes->cpu;
+
     return nes;
 }
 
-void destroy_nes(NES* nes) {
+void nes_destroy(NES* nes) {
     if (nes) {
+        if (nes->cartridge) {
+            free(nes->cartridge);
+        }
         free(nes);
     }
 }
 
-uint8_t bus_read_byte(NES* nes, uint16_t addr) {
-    if (IS_RAM_ADDR(addr)) {
-        // Mirror every 2KB.
-        return nes->cpu.ram[RAM_MIRROR_TO_BASE(addr)];
-    }
-
-    else if (IS_PPU_ADDR(addr)) {
-        // TODO: implement.
+int nes_load_cartridge(NES* nes, const char* path) {
+    nes->cartridge = load_cart(path);
+    if (!nes->cartridge) {
         return 0;
     }
 
-    else if (IS_IO_ADDR(addr)) {
-        // TODO: implement.
-        return 0;
-    }
-
-    else if (IS_EXPANSION_ADDR(addr)) {
-        // TODO: implement.
-        return 0;
-    }
-
-    else if (IS_SRAM_ADDR(addr)) {
-        // TODO: implement.
-        return 0;
-    }
-
-    return 0;
+    return 1;
 }
 
-void bus_write_byte(NES* nes, uint16_t addr, uint8_t data) {
-    if (IS_RAM_ADDR(addr)) {
-        nes->cpu.ram[RAM_MIRROR_TO_BASE(addr)] = data;
-    }
-
-    else if (IS_PPU_ADDR(addr)) {
-        // TODO: implement.
-    }
+void nes_step(NES* nes) {
+    uint8_t opcode = bus_read_byte(&nes->bus, nes->cpu.regs.pc++);
+    printf("opcode: %02X\n", opcode);
     
 }

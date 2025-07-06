@@ -72,7 +72,7 @@ struct INES_CartHeader {
     char padding[5];
 };
 
-typedef struct {
+typedef struct INES_Cart {
     struct INES_CartHeader header;
     // The trainer usually contains mapper register translation and CHR-RAM caching code for
     // - early RAM cartridges that could not mimic mapper ASICs and only had 32 KiB of CHR-RAM;

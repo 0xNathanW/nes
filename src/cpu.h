@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "bus.h"
 
 /* Flags:
     Carry Flag:
@@ -25,7 +26,7 @@
     While the decimal mode flag is set the processor will obey the rules of
     Binary Coded Decimal (BCD) arithmetic during addition and subtraction. The
     flag can be explicitly set using 'Set Decimal Flag' (SED) and cleared with
-   'Clear Decimal Flag' (CLD).
+    'Clear Decimal Flag' (CLD).
 
     Break Command
     The break command bit is set when a BRK instruction has been executed and an
@@ -43,15 +44,30 @@
     to a one.
 */
 
-#define FLAG_CARRY     0x01
-#define FLAG_ZERO      0x02
-#define FLAG_INTERRUPT 0x03
-#define FLAG_DECIMAL   0x04
-#define FLAG_BREAK     0x05
-#define FLAG_OVERFLOW  0x01
-#define FLAG_NEGATIVE  0x01
+/*
+7  bit  0
+---- ----
+NV1B DIZC
+|||| ||||
+|||| |||+- Carry
+|||| ||+-- Zero
+|||| |+--- Interrupt Disable
+|||| +---- Decimal
+|||+------ (No CPU effect; see: the B flag)
+||+------- (No CPU effect; always pushed as 1)
+|+-------- Overflow
++--------- Negative
+*/
 
-typedef struct {
+#define FLAG_CARRY     (1 << 0)
+#define FLAG_ZERO      (1 << 1)
+#define FLAG_INTERRUPT (1 << 2)
+#define FLAG_DECIMAL   (1 << 3)
+#define FLAG_BREAK     (1 << 4)
+#define FLAG_OVERFLOW  (1 << 6)
+#define FLAG_NEGATIVE  (1 << 7)
+
+typedef struct Registers {
     // Registers:
     // The accumulator can read and write to memory.
     // It is used to store arithmetic and logic results such as addition and
@@ -60,14 +76,14 @@ typedef struct {
     // The x index is can read and write to memory. It is used primarily as a
     // counter in loops, or for addressing memory, but can also temporarily
     // store data like the accumulator.
-    uint8_t x_index;
+    uint8_t x;
     // Much like the x index, however they are not completely interchangeable.
     // Some operations are only available for each register.
-    uint8_t y_index;
+    uint8_t y;
     // The register holds value of 7 different flags which can only have a value
     // of 0 or 1 and hence can be represented in a single register. The bits
     // represent the status of the processor.
-    uint8_t flag;
+    uint8_t p;
     // The processor supports a 256 byte stack located between $0100 and $01FF.
     // The stack pointer is an 8 bit register and holds the low 8 bits of the
     // next free location on the stack. The location of the stack is fixed and
@@ -75,11 +91,19 @@ typedef struct {
     uint8_t sp;
     // This is a 16-bit register unlike other registers which are only 8-bit in
     // length, it indicates where the processor is in the program sequence.
-    uint16_t pc;
-  
-    uint8_t ram[0x0800];
-} CPU;
+    uint16_t pc;  
+} Registers;
 
-void reset_cpu(CPU* cpu);
+typedef struct CPU_6502 {
+    Registers regs;
+    Bus* bus;
+    uint8_t ram[RAM_SIZE];
+} CPU_6502;
+
+void cpu_init(CPU_6502* cpu);
+void reset_cpu(CPU_6502* cpu);
+
+void cpu_set_flag(CPU_6502* cpu, uint8_t flag, bool value);
+bool cpu_get_flag(CPU_6502* cpu, uint8_t flag);
 
 #endif
