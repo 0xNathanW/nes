@@ -99,4 +99,7 @@ INES_Cart* load_cart(const char* path);
 void free_cart(INES_Cart* cart);
 void print_cart_info(INES_Cart* cart);
 
+uint8_t cart_read_byte(INES_Cart* cart, uint16_t addr);
+void cart_write_byte(INES_Cart* cart, uint16_t addr, uint8_t data);
+
 #endif

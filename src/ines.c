@@ -34,8 +34,6 @@ INES_Cart* load_cart(const char* path) {
         return NULL;
     }
 
-    printf("allocating %lu bytes for cart\n", sizeof(INES_Cart));
-    printf("sizeof(INES_CartHeader): %lu\n", sizeof(struct INES_CartHeader));
     INES_Cart* cart = malloc(sizeof(INES_Cart));
     if (!cart) {
         printf("error: unable to allocate memory for cart\n");
@@ -120,7 +118,7 @@ INES_Cart* load_cart(const char* path) {
     return cart;
 }
 
-void free_cart_memory(INES_Cart* cart) {
+void free_cart(INES_Cart* cart) {
     if (!cart) {
         return;
     }

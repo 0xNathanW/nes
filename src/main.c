@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include "ines.h"
+#include "nes.h"
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -11,6 +12,19 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     print_cart_info(cart);
-    free_cart_memory(cart);
+    
+    NES* nes = create_nes(cart);
+    if (!nes) {
+        printf("error: could not create NES\n");
+        free_cart(cart);
+        return 1;
+    }
+
+    while (1) {
+        break;
+    }
+
+    destroy_nes(nes);
+    free_cart(cart);
     return 0;     
 }
