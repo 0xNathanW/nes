@@ -102,6 +102,7 @@ typedef struct CPU_6502 {
 
 void cpu_init(CPU_6502* cpu);
 void reset_cpu(CPU_6502* cpu);
+void cpu_step(CPU_6502* cpu);
 
 void cpu_set_flag(CPU_6502* cpu, uint8_t flag, bool value);
 bool cpu_get_flag(CPU_6502* cpu, uint8_t flag);

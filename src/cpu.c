@@ -1,6 +1,7 @@
 #include "cpu.h"
 #include <string.h>
 #include "bus.h"
+#include <stdio.h>
 
 void cpu_init(CPU_6502* cpu) {
     // DO i have to do this?
@@ -21,4 +22,9 @@ void cpu_set_flag(CPU_6502* cpu, uint8_t flag, bool value) {
 
 bool cpu_get_flag(CPU_6502* cpu, uint8_t flag) {
     return (cpu->regs.p & flag) != 0;
+}
+
+void cpu_step(CPU_6502* cpu) {
+    uint8_t opcode = bus_read_byte(cpu->bus, cpu->regs.pc++);
+    printf("opcode: %02X\n", opcode);
 }

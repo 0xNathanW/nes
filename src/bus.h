@@ -82,4 +82,7 @@ void bus_connect_cartridge(Bus* bus, struct INES_Cart* cartridge);
 void bus_write_byte(Bus* bus, uint16_t addr, uint8_t data);
 uint8_t bus_read_byte(Bus* bus, uint16_t addr);
 
+void bus_write_word(Bus* bus, uint16_t addr, uint16_t data);
+uint16_t bus_read_word(Bus* bus, uint16_t addr);
+
 #endif

@@ -67,3 +67,12 @@ uint8_t bus_read_byte(Bus* bus, uint16_t addr) {
 
     return data;
 }
+
+void bus_write_word(Bus* bus, uint16_t addr, uint16_t data) {
+    bus_write_byte(bus, addr, data & 0xFF);
+    bus_write_byte(bus, addr + 1, data >> 8);
+}
+
+uint16_t bus_read_word(Bus* bus, uint16_t addr) {
+    return (bus_read_byte(bus, addr) << 8) | bus_read_byte(bus, addr + 1);
+}
