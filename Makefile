@@ -1,49 +1,30 @@
-# Sets compiler to gcc.
 CC = gcc
-# Compiler flags
-# -Wall: Enable all warnings
-# -Wextra: Enable extra warnings
-# -std=c99: Use C99 standard
-# -g: Enable debugging
 CFLAGS = -Wall -Wextra -std=c99 -g
-# Links to SDL2 library, expands to -lSDL2
 LIBS = `pkg-config --libs sdl2`
-# Includes SDL2 headers, expands to -I/usr/include/SDL2
 INCLUDES = `pkg-config --cflags sdl2`
+TARGET = bin/nes
 
-# Directory structure
-SRCDIR = src
-BUILDDIR = build
-BINDIR = bin
+SRC_FILES = $(wildcard src/*.c)
+OBJ_FILES = $(SRC_FILES:src/%.c=build/%.o)
 
-# Name of the executable.
-TARGET = $(BINDIR)/nes
-
-# Source files
-SOURCES = $(wildcard $(SRCDIR)/*.c)
-# Object files are created from source files by replacing .c with .o and moving to build dir
-OBJECTS = $(SOURCES:$(SRCDIR)/%.c=$(BUILDDIR)/%.o)
-
-# Default target, builds the executable when `make` is run, will run command below.
 all: $(TARGET)
 
-# Create directories if they don't exist
-$(BUILDDIR):
-	mkdir -p $(BUILDDIR)
+# Create directories.
+build:
+	mkdir -p build
+bin:
+	mkdir -p bin
 
-$(BINDIR):
-	mkdir -p $(BINDIR)
+# Linking.
+$(TARGET): $(OBJ_FILES) | bin
+	$(CC) $(OBJ_FILES) -o $(TARGET) $(LIBS)
 
-# Link the executable, expands to gcc build/main.o -o bin/nes -lSDL2.
-$(TARGET): $(OBJECTS) | $(BINDIR)
-	$(CC) $(OBJECTS) -o $(TARGET) $(LIBS)
-
-# Compile source files to object files
-$(BUILDDIR)/%.o: $(SRCDIR)/%.c | $(BUILDDIR)
+# Compile src files.
+build/%.o: src/%.c | build
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
-	rm -rf $(BUILDDIR) $(BINDIR)
+	rm -rf build bin
 
 rebuild: clean all
 
