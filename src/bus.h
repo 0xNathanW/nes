@@ -69,15 +69,15 @@ _____________	0x0000
 #define PPU_MIRROR_TO_BASE(addr)  (PPU_START + ((addr) & 0x0007))
 
 struct CPU_6502;
-struct INES_Cart;
+struct Cartridge;
 
 typedef struct Bus {
-    struct INES_Cart* cartridge;
+    struct Cartridge* cartridge;
     struct CPU_6502* cpu;
 } Bus;
 
 void bus_init(Bus* bus);
-void bus_connect_cartridge(Bus* bus, struct INES_Cart* cartridge);
+void bus_connect_cartridge(Bus* bus, struct Cartridge* cartridge);
 
 void bus_write_byte(Bus* bus, uint16_t addr, uint8_t data);
 uint8_t bus_read_byte(Bus* bus, uint16_t addr);

@@ -1,12 +1,12 @@
 #include <SDL2/SDL.h>
-#include "ines.h"
+#include "cart.h"
 #include "nes.h"
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
 int main(int argc, char *argv[]) { 
-    INES_Cart* cart = load_cart("test_roms/dk.nes");
+    Cartridge* cart = load_cart("test_roms/dk.nes");
     if (!cart) {
         printf("error: could not load cart\n");
         return 1;

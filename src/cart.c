@@ -1,9 +1,9 @@
-#include "ines.h"
+#include "cart.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
-bool is_header_valid(struct INES_CartHeader* header) {
+bool is_header_valid(struct CartHeader* header) {
 
     char expected_signature[4] = {0x4E, 0x45, 0x53, 0x1A};
     if (memcmp(expected_signature, header->signature, 4)) {
@@ -26,7 +26,7 @@ bool is_header_valid(struct INES_CartHeader* header) {
     return true;
 }
 
-INES_Cart* load_cart(const char* path) {
+Cartridge* load_cart(const char* path) {
 
     FILE* file = fopen(path, "rb");
     if (!file) {
@@ -34,7 +34,7 @@ INES_Cart* load_cart(const char* path) {
         return NULL;
     }
 
-    INES_Cart* cart = malloc(sizeof(INES_Cart));
+    Cartridge* cart = malloc(sizeof(Cartridge));
     if (!cart) {
         printf("error: unable to allocate memory for cart\n");
         fclose(file);
@@ -42,9 +42,9 @@ INES_Cart* load_cart(const char* path) {
     }
 
     // Initialise structure to zeros.
-    memset(cart, 0, sizeof(INES_Cart));
+    memset(cart, 0, sizeof(Cartridge));
 
-    if (fread(&cart->header, sizeof(struct INES_CartHeader), 1, file) != 1) {
+    if (fread(&cart->header, sizeof(struct CartHeader), 1, file) != 1) {
         printf("error: could not read cart header\n");
         free(cart);
         fclose(file);
@@ -118,7 +118,7 @@ INES_Cart* load_cart(const char* path) {
     return cart;
 }
 
-void free_cart(INES_Cart* cart) {
+void free_cart(Cartridge* cart) {
     if (!cart) {
         return;
     }
@@ -134,7 +134,7 @@ void free_cart(INES_Cart* cart) {
     free(cart);
 }
 
-void print_cart_info(INES_Cart* cart) {
+void print_cart_info(Cartridge* cart) {
     printf("\nCart Info:\n");
     printf("PRG ROM size: %d KB\n", cart->prg_rom_size * 16);
     printf("CHR ROM size: %d KB\n", cart->chr_rom_size * 8);

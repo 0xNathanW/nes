@@ -1,5 +1,5 @@
-#ifndef INES
-#define INES
+#ifndef CART_H
+#define CART_H
 
 #include <stdint.h>
 #include <stdio.h>
@@ -19,7 +19,7 @@ TODO: do we need to keep header in the cart?
 
 // 16-byte header for iNES roms.
 // General rule, if last 4 bytes are not all set to zero, and the ines 2.0 is not used, refuse to load the ROM.
-struct INES_CartHeader {
+struct CartHeader {
     // Constant $4E $45 $53 $1A (ASCII "NES" followed by MS-DOS end-of-file).
     char signature[4];
     // Size of PRG ROM (program code) in 16 KB units, generally 32KB.
@@ -72,8 +72,8 @@ struct INES_CartHeader {
     char padding[5];
 };
 
-typedef struct INES_Cart {
-    struct INES_CartHeader header;
+typedef struct Cartridge {
+    struct CartHeader header;
     // The trainer usually contains mapper register translation and CHR-RAM caching code for
     // - early RAM cartridges that could not mimic mapper ASICs and only had 32 KiB of CHR-RAM;
     // - Nesticle, an old but influential NES emulator for DOS.
@@ -93,13 +93,13 @@ typedef struct INES_Cart {
     // but there mapper specific exceptions.
     bool is_battery_backed;
     uint8_t mapper_number;
-} INES_Cart;
+} Cartridge;
 
-INES_Cart* load_cart(const char* path);
-void free_cart(INES_Cart* cart);
-void print_cart_info(INES_Cart* cart);
+Cartridge* load_cart(const char* path);
+void free_cart(Cartridge* cart);
+void print_cart_info(Cartridge* cart);
 
-uint8_t cart_read_byte(INES_Cart* cart, uint16_t addr);
-void cart_write_byte(INES_Cart* cart, uint16_t addr, uint8_t data);
+uint8_t cart_read_byte(Cartridge* cart, uint16_t addr);
+void cart_write_byte(Cartridge* cart, uint16_t addr, uint8_t data);
 
 #endif

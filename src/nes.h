@@ -2,13 +2,13 @@
 #define NES_H
 
 #include "cpu.h"
-#include "ines.h"
+#include "cart.h"
 #include "bus.h"
 
 typedef struct NES {
     CPU_6502 cpu;
     Bus bus;
-    INES_Cart* cartridge;
+    Cartridge* cartridge;
 } NES;
 
 NES* nes_create();
