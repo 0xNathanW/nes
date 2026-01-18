@@ -75,5 +75,5 @@ void bus_write_word(Bus* bus, uint16_t addr, uint16_t data) {
 }
 
 uint16_t bus_read_word(Bus* bus, uint16_t addr) {
-    return (bus_read_byte(bus, addr) << 8) | bus_read_byte(bus, addr + 1);
+    return bus_read_byte(bus, addr) | (bus_read_byte(bus, addr + 1) << 8);
 }
