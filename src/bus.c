@@ -25,10 +25,6 @@ void bus_write_byte(Bus* bus, uint16_t addr, uint8_t data) {
         printf("unimplemented: write to IO\n");
     }
 
-    else if (addr <= PRG_ROM_END) {
-        printf("unimplemented: write to cartridge\n");
-    }
-
     else if (addr <= EXPANSION_END) {
         printf("unimplemented: write to expansion\n");
     }
@@ -36,11 +32,15 @@ void bus_write_byte(Bus* bus, uint16_t addr, uint8_t data) {
     else if (addr <= SRAM_END) {
         printf("unimplemented: write to SRAM\n");
     }
+
+    else if (addr <= PRG_ROM_END) {
+        printf("unimplemented: write to cartridge\n");
+    }
 }
 
 uint8_t bus_read_byte(Bus* bus, uint16_t addr) {
     uint8_t data = 0;
-    
+
     if (addr <= RAM_MIRROR_END) {
         data = bus->cpu->ram[RAM_MIRROR_TO_BASE(addr)];
     }
@@ -53,16 +53,16 @@ uint8_t bus_read_byte(Bus* bus, uint16_t addr) {
         printf("unimplemented: read from IO\n");
     }
 
-    else if (addr <= PRG_ROM_END) {
-        printf("unimplemented: read from cartridge\n");
-    }
-
     else if (addr <= EXPANSION_END) {
         printf("unimplemented: read from expansion\n");
     }
 
     else if (addr <= SRAM_END) {
         printf("unimplemented: read from SRAM\n");
+    }
+
+    else if (addr <= PRG_ROM_END) {
+        data = cart_read_byte(bus->cartridge, addr);
     }
 
     return data;
