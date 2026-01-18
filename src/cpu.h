@@ -94,6 +94,27 @@ typedef struct Registers {
     uint16_t pc;  
 } Registers;
 
+// Addressing mode is a property of an instruction that defines how the CPU
+// should interpret the next 1 or 2 bytes of the instruction stream.
+typedef enum AddressingMode {
+    // No operand.
+    IMPLIED,
+    // Operand is the actual value.
+    IMMEDIATE,
+    // Address in first 256 bytes of memory (0x0000 - 0x00FF).
+    ZERO_PAGE,
+    // Zero page with X offset.
+    ZERO_PAGE_X,
+    // Zero page with Y offset.
+    ZERO_PAGE_Y,
+    // Full 16-bit address.
+    ABSOLUTE,
+    // Absolute with X offset.
+    ABSOLUTE_X,
+    // Absolute with Y offset.
+    ABSOLUTE_Y,
+} AddressingMode;
+
 typedef struct CPU_6502 {
     Registers regs;
     Bus* bus;

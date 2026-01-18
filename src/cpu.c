@@ -1,4 +1,5 @@
 #include "cpu.h"
+#include <stdint.h>
 #include <string.h>
 #include "bus.h"
 #include <stdio.h>
@@ -22,6 +23,30 @@ void cpu_set_flag(CPU_6502* cpu, uint8_t flag, bool value) {
 
 bool cpu_get_flag(CPU_6502* cpu, uint8_t flag) {
     return (cpu->regs.p & flag) != 0;
+}
+
+// Get the address of the operand for the given addressing mode.
+uint16_t cpu_get_op_addr(CPU_6502* cpu, AddressingMode mode) {
+    switch (mode) {
+        case IMMEDIATE:
+            return cpu->regs.pc;
+        // Zero page addressing wraps around within the zero page.
+        case ZERO_PAGE:
+            return bus_read_byte(cpu->bus, cpu->regs.pc);
+        case ZERO_PAGE_X:
+            return bus_read_byte(cpu->bus, cpu->regs.pc) + cpu->regs.x;
+        case ZERO_PAGE_Y:
+            return bus_read_byte(cpu->bus, cpu->regs.pc) + cpu->regs.y;
+        case ABSOLUTE:
+            return bus_read_word(cpu->bus, cpu->regs.pc);
+        case ABSOLUTE_X:
+            return bus_read_word(cpu->bus, cpu->regs.pc) + cpu->regs.x;
+        case ABSOLUTE_Y:
+            return bus_read_word(cpu->bus, cpu->regs.pc) + cpu->regs.y;
+        default:
+            printf("unimplemented addressing mode: %d\n", mode);
+            return 0;
+    }
 }
 
 void cpu_step(CPU_6502* cpu) {
