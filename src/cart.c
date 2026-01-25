@@ -82,14 +82,15 @@ Cartridge* load_cart(const char* path) {
 
     // Read cart code.
     if (cart->prg_rom_size > 0) {
-        cart->prg_rom = malloc(cart->prg_rom_size);
+        size_t prg_bytes = cart->prg_rom_size * PRG_BLOCK;
+        cart->prg_rom = malloc(prg_bytes);
         if (!cart->prg_rom) {
             printf("error: unable to allocate memory for program code\n");
             free(cart);
             fclose(file);
             return NULL;
         }
-        if (fread(cart->prg_rom, cart->prg_rom_size, 1, file) != 1) {
+        if (fread(cart->prg_rom, prg_bytes, 1, file) != 1) {
             printf("error: unable to read program code\n");
             free(cart);
             fclose(file);
@@ -99,14 +100,15 @@ Cartridge* load_cart(const char* path) {
 
     // Read graphics data.
     if (cart->chr_rom_size > 0) {
-        cart->chr_rom = malloc(cart->chr_rom_size);
+        size_t chr_bytes = cart->chr_rom_size * CHR_BLOCK;
+        cart->chr_rom = malloc(chr_bytes);
         if (!cart->chr_rom) {
             printf("error: unable to allocate memory for graphics data\n");
             free(cart);
             fclose(file);
             return NULL;
         }
-        if (fread(cart->chr_rom, cart->chr_rom_size, 1, file) != 1) {
+        if (fread(cart->chr_rom, chr_bytes, 1, file) != 1) {
             printf("error: unable to read graphics data\n");
             free(cart);
             fclose(file);
