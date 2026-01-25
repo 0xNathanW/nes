@@ -1,9 +1,9 @@
 #ifndef CART_H
 #define CART_H
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdbool.h>
 
 // https://www.nesdev.org/wiki/INES
 
@@ -18,7 +18,8 @@ TODO: do we need to keep header in the cart?
 #define CHR_BLOCK 8192
 
 // 16-byte header for iNES roms.
-// General rule, if last 4 bytes are not all set to zero, and the ines 2.0 is not used, refuse to load the ROM.
+// General rule, if last 4 bytes are not all set to zero, and the ines 2.0 is
+// not used, refuse to load the ROM.
 struct CartHeader {
     // Constant $4E $45 $53 $1A (ASCII "NES" followed by MS-DOS end-of-file).
     char signature[4];
@@ -77,20 +78,20 @@ typedef struct Cartridge {
     // The trainer usually contains mapper register translation and CHR-RAM caching code for
     // - early RAM cartridges that could not mimic mapper ASICs and only had 32 KiB of CHR-RAM;
     // - Nesticle, an old but influential NES emulator for DOS.
-    // It is not used on unmodified dumps of original ROM cartridges. 
+    // It is not used on unmodified dumps of original ROM cartridges.
     bool has_trainer;
-    uint8_t *trainer;
+    uint8_t* trainer;
     // Part of ROM that contains game code (instructions), size defined in header.
     uint8_t prg_rom_size;
-    uint8_t *prg_rom;
+    uint8_t* prg_rom;
     // Part of ROM that contains graphics data, size defined in header.
     uint8_t chr_rom_size;
-    uint8_t *chr_rom;
+    uint8_t* chr_rom;
     // 0 = vertical arragement, 1 = horizontal arrangement.
     uint8_t nametable_arrangement;
     bool alternative_nametable_arrangement;
-    // Persistant memory is usualy in the form of battery backed prg-ram at 0x6000,
-    // but there mapper specific exceptions.
+    // Persistant memory is usualy in the form of battery backed prg-ram at
+    // 0x6000, but there mapper specific exceptions.
     bool is_battery_backed;
     uint8_t mapper_number;
 } Cartridge;

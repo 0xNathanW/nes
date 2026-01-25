@@ -1,9 +1,9 @@
 #ifndef NES_H
 #define NES_H
 
-#include "cpu.h"
-#include "cart.h"
 #include "bus.h"
+#include "cart.h"
+#include "cpu.h"
 
 typedef struct NES {
     CPU_6502 cpu;

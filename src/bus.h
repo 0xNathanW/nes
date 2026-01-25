@@ -36,37 +36,37 @@ RAM
 _____________	0x0000
 *********************************************************/
 
-#define RAM_START         0x0000
-#define RAM_END           0x07FF
-#define RAM_SIZE          0x0800
-#define RAM_MIRROR_START  0x0800
-#define RAM_MIRROR_END    0x1FFF
+#define RAM_START 0x0000
+#define RAM_END 0x07FF
+#define RAM_SIZE 0x0800
+#define RAM_MIRROR_START 0x0800
+#define RAM_MIRROR_END 0x1FFF
 
-#define PPU_START         0x2000
-#define PPU_END           0x2007
-#define PPU_SIZE          0x0008
-#define PPU_MIRROR_START  0x2008
-#define PPU_MIRROR_END    0x3FFF
+#define PPU_START 0x2000
+#define PPU_END 0x2007
+#define PPU_SIZE 0x0008
+#define PPU_MIRROR_START 0x2008
+#define PPU_MIRROR_END 0x3FFF
 
-#define IO_START          0x4000
-#define IO_END            0x401F
-#define IO_SIZE           0x0020
+#define IO_START 0x4000
+#define IO_END 0x401F
+#define IO_SIZE 0x0020
 
-#define EXPANSION_START   0x4020
-#define EXPANSION_END     0x5FFF
-#define EXPANSION_SIZE    0x1FE0
+#define EXPANSION_START 0x4020
+#define EXPANSION_END 0x5FFF
+#define EXPANSION_SIZE 0x1FE0
 
-#define SRAM_START        0x6000
-#define SRAM_END          0x7FFF
-#define SRAM_SIZE         0x2000
+#define SRAM_START 0x6000
+#define SRAM_END 0x7FFF
+#define SRAM_SIZE 0x2000
 
-#define PRG_ROM_START     0x8000
-#define PRG_ROM_END       0xFFFF
-#define PRG_ROM_SIZE      0x8000
+#define PRG_ROM_START 0x8000
+#define PRG_ROM_END 0xFFFF
+#define PRG_ROM_SIZE 0x8000
 
 // Mirror address conversion.
-#define RAM_MIRROR_TO_BASE(addr)  ((addr) & 0x07FF)
-#define PPU_MIRROR_TO_BASE(addr)  (PPU_START + ((addr) & 0x0007))
+#define RAM_MIRROR_TO_BASE(addr) ((addr) & 0x07FF)
+#define PPU_MIRROR_TO_BASE(addr) (PPU_START + ((addr) & 0x0007))
 
 struct Cartridge;
 

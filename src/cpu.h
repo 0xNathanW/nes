@@ -1,9 +1,9 @@
 #ifndef CPU_H
 #define CPU_H
 
-#include <stdint.h>
-#include <stdbool.h>
 #include "bus.h"
+#include <stdbool.h>
+#include <stdint.h>
 
 /* Flags:
     Carry Flag:
@@ -59,13 +59,13 @@ NV1B DIZC
 +--------- Negative
 */
 
-#define FLAG_CARRY     (1 << 0)
-#define FLAG_ZERO      (1 << 1)
+#define FLAG_CARRY (1 << 0)
+#define FLAG_ZERO (1 << 1)
 #define FLAG_INTERRUPT (1 << 2)
-#define FLAG_DECIMAL   (1 << 3)
-#define FLAG_BREAK     (1 << 4)
-#define FLAG_OVERFLOW  (1 << 6)
-#define FLAG_NEGATIVE  (1 << 7)
+#define FLAG_DECIMAL (1 << 3)
+#define FLAG_BREAK (1 << 4)
+#define FLAG_OVERFLOW (1 << 6)
+#define FLAG_NEGATIVE (1 << 7)
 
 typedef struct Registers {
     // Registers:
@@ -91,7 +91,7 @@ typedef struct Registers {
     uint8_t sp;
     // This is a 16-bit register unlike other registers which are only 8-bit in
     // length, it indicates where the processor is in the program sequence.
-    uint16_t pc;  
+    uint16_t pc;
 } Registers;
 
 // Addressing mode is a property of an instruction that defines how the CPU
@@ -120,7 +120,6 @@ typedef struct CPU_6502 {
     Bus* bus;
 } CPU_6502;
 
-void cpu_init(CPU_6502* cpu);
 void cpu_power_on(CPU_6502* cpu);
 void cpu_reset(CPU_6502* cpu);
 void cpu_step(CPU_6502* cpu);

@@ -1,6 +1,7 @@
 #include "nes.h"
 #include "bus.h"
 #include "cpu.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -11,10 +12,7 @@ NES* nes_create() {
     }
     memset(nes, 0, sizeof(NES));
 
-    cpu_init(&nes->cpu);
     bus_init(&nes->bus);
-
-    // Connect CPU to bus
     nes->cpu.bus = &nes->bus;
 
     return nes;
@@ -40,12 +38,9 @@ int nes_load_cartridge(NES* nes, const char* path) {
     return 1;
 }
 
-void nes_reset(NES* nes) {
-    cpu_reset(&nes->cpu);
-}
+void nes_reset(NES* nes) { cpu_reset(&nes->cpu); }
 
 void nes_step(NES* nes) {
     uint8_t opcode = bus_read_byte(&nes->bus, nes->cpu.regs.pc++);
     printf("opcode: %02X\n", opcode);
-    
 }

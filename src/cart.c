@@ -61,7 +61,8 @@ Cartridge* load_cart(const char* path) {
     cart->has_trainer = (cart->header.flags6 & 0x04) != 0;
     cart->nametable_arrangement = (cart->header.flags6 & 0x01);
     cart->is_battery_backed = (cart->header.flags6 & 0x02) != 0;
-    cart->mapper_number = (cart->header.flags7 & 0xF0) | (cart->header.flags6 >> 4);
+    cart->mapper_number =
+        (cart->header.flags7 & 0xF0) | (cart->header.flags6 >> 4);
 
     // Read the trainer if exists.
     if (cart->has_trainer) {
@@ -141,7 +142,8 @@ void print_cart_info(Cartridge* cart) {
     printf("PRG ROM size: %d KB\n", cart->prg_rom_size * 16);
     printf("CHR ROM size: %d KB\n", cart->chr_rom_size * 8);
     printf("Mapper number: %d\n", cart->mapper_number);
-    printf("Mirroring: %s\n", cart->nametable_arrangement ? "horizontal" : "vertical");
+    printf("Mirroring: %s\n",
+           cart->nametable_arrangement ? "horizontal" : "vertical");
     if (cart->alternative_nametable_arrangement) {
         printf("Alternative nametable arrangement\n");
     }

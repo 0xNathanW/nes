@@ -1,11 +1,9 @@
 #include "bus.h"
 #include "cart.h"
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
-void bus_init(Bus* bus) {
-    memset(bus, 0, sizeof(Bus));
-}
+void bus_init(Bus* bus) { memset(bus, 0, sizeof(Bus)); }
 
 void bus_connect_cartridge(Bus* bus, Cartridge* cartridge) {
     bus->cartridge = cartridge;
@@ -66,7 +64,6 @@ uint8_t bus_read_byte(Bus* bus, uint16_t addr) {
 
     return data;
 }
-
 
 void bus_write_word(Bus* bus, uint16_t addr, uint16_t data) {
     bus_write_byte(bus, addr, data & 0xFF);
