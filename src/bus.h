@@ -68,12 +68,11 @@ _____________	0x0000
 #define RAM_MIRROR_TO_BASE(addr)  ((addr) & 0x07FF)
 #define PPU_MIRROR_TO_BASE(addr)  (PPU_START + ((addr) & 0x0007))
 
-struct CPU_6502;
 struct Cartridge;
 
 typedef struct Bus {
+    uint8_t ram[RAM_SIZE];
     struct Cartridge* cartridge;
-    struct CPU_6502* cpu;
 } Bus;
 
 void bus_init(Bus* bus);

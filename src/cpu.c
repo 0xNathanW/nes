@@ -5,9 +5,7 @@
 #include <stdio.h>
 
 void cpu_init(CPU_6502* cpu) {
-    // DO i have to do this?
     memset(cpu, 0, sizeof(CPU_6502));
-    memset(cpu->ram, 0, sizeof(cpu->ram));
 }
 
 // Cold boot.

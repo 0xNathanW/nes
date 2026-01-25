@@ -1,6 +1,5 @@
 #include "bus.h"
 #include "cart.h"
-#include "cpu.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -14,7 +13,7 @@ void bus_connect_cartridge(Bus* bus, Cartridge* cartridge) {
 
 void bus_write_byte(Bus* bus, uint16_t addr, uint8_t data) {
     if (addr <= RAM_MIRROR_END) {
-        bus->cpu->ram[RAM_MIRROR_TO_BASE(addr)] = data;
+        bus->ram[RAM_MIRROR_TO_BASE(addr)] = data;
     }
 
     else if (addr <= PPU_MIRROR_END) {
@@ -42,7 +41,7 @@ uint8_t bus_read_byte(Bus* bus, uint16_t addr) {
     uint8_t data = 0;
 
     if (addr <= RAM_MIRROR_END) {
-        data = bus->cpu->ram[RAM_MIRROR_TO_BASE(addr)];
+        data = bus->ram[RAM_MIRROR_TO_BASE(addr)];
     }
 
     else if (addr <= PPU_MIRROR_END) {

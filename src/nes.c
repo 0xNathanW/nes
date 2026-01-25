@@ -5,7 +5,6 @@
 #include <string.h>
 
 NES* nes_create() {
-    
     NES* nes = (NES*)malloc(sizeof(NES));
     if (!nes) {
         return NULL;
@@ -15,12 +14,8 @@ NES* nes_create() {
     cpu_init(&nes->cpu);
     bus_init(&nes->bus);
 
-    // Connect the bus to components.
-    nes->bus.cpu = &nes->cpu;
-    nes->bus.cartridge = nes->cartridge;
-
+    // Connect CPU to bus
     nes->cpu.bus = &nes->bus;
-    nes->bus.cpu = &nes->cpu;
 
     return nes;
 }

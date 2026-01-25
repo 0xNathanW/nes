@@ -118,7 +118,6 @@ typedef enum AddressingMode {
 typedef struct CPU_6502 {
     Registers regs;
     Bus* bus;
-    uint8_t ram[RAM_SIZE];
 } CPU_6502;
 
 void cpu_init(CPU_6502* cpu);
