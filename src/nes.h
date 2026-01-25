@@ -14,6 +14,7 @@ typedef struct NES {
 NES* nes_create();
 void nes_destroy(NES* nes);
 int nes_load_cartridge(NES* nes, const char* path);
+void nes_reset(NES* nes);
 void nes_step(NES* nes);
 
 #endif

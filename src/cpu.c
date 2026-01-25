@@ -8,9 +8,23 @@ void cpu_init(CPU_6502* cpu) {
     // DO i have to do this?
     memset(cpu, 0, sizeof(CPU_6502));
     memset(cpu->ram, 0, sizeof(cpu->ram));
-    cpu->regs.pc = bus_read_byte(cpu->bus, 0xFFFC);
+}
+
+// Cold boot.
+void cpu_power_on(CPU_6502* cpu) {
+    cpu->regs.acc = 0;
+    cpu->regs.x = 0;
+    cpu->regs.y = 0;
     cpu->regs.sp = 0xFD;
     cpu->regs.p = 0x34;
+    cpu->regs.pc = bus_read_word(cpu->bus, 0xFFFC);
+}
+
+// Warm reset.
+void cpu_reset(CPU_6502* cpu) {
+    cpu->regs.sp -= 3;
+    cpu->regs.p |= FLAG_INTERRUPT;
+    cpu->regs.pc = bus_read_word(cpu->bus, 0xFFFC);
 }
 
 void cpu_set_flag(CPU_6502* cpu, uint8_t flag, bool value) {

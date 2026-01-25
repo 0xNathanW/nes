@@ -40,7 +40,13 @@ int nes_load_cartridge(NES* nes, const char* path) {
         return 0;
     }
 
+    nes->bus.cartridge = nes->cartridge;
+    cpu_power_on(&nes->cpu);
     return 1;
+}
+
+void nes_reset(NES* nes) {
+    cpu_reset(&nes->cpu);
 }
 
 void nes_step(NES* nes) {
