@@ -153,3 +153,24 @@ void print_cart_info(Cartridge* cart) {
     }
     printf("\n");
 }
+
+uint8_t cart_read_byte(Cartridge* cart, uint16_t addr) {
+    // Mapper 0 (NROM): PRG-ROM at $8000-$FFFF
+    if (addr >= 0x8000) {
+        uint16_t offset = addr - 0x8000;
+        // Mirror 16KB ROMs to fill 32KB address space
+        if (cart->prg_rom_size == 1) {
+            // Mirror: $C000-$FFFF maps to $8000-$BFFF
+            offset &= 0x3FFF;
+        }
+        return cart->prg_rom[offset];
+    }
+    return 0;
+}
+
+void cart_write_byte(Cartridge* cart, uint16_t addr, uint8_t data) {
+    // Mapper 0: ROM is read only, writes are ignored.
+    (void)cart;
+    (void)addr;
+    (void)data;
+}
