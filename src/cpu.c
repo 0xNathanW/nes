@@ -37,13 +37,12 @@ uint16_t cpu_get_op_addr(CPU_6502* cpu, AddressingMode mode) {
     switch (mode) {
     case IMMEDIATE:
         return cpu->regs.pc;
-    // Zero page addressing wraps around within the zero page.
     case ZERO_PAGE:
         return bus_read_byte(cpu->bus, cpu->regs.pc);
     case ZERO_PAGE_X:
-        return bus_read_byte(cpu->bus, cpu->regs.pc) + cpu->regs.x;
+        return (bus_read_byte(cpu->bus, cpu->regs.pc) + cpu->regs.x) & 0xFF;
     case ZERO_PAGE_Y:
-        return bus_read_byte(cpu->bus, cpu->regs.pc) + cpu->regs.y;
+        return (bus_read_byte(cpu->bus, cpu->regs.pc) + cpu->regs.y) & 0xFF;
     case ABSOLUTE:
         return bus_read_word(cpu->bus, cpu->regs.pc);
     case ABSOLUTE_X:
