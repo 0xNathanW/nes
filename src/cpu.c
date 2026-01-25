@@ -34,7 +34,13 @@ bool cpu_get_flag(CPU_6502* cpu, uint8_t flag) {
 
 // Get the address of the operand for the given addressing mode.
 uint16_t cpu_get_op_addr(CPU_6502* cpu, AddressingMode mode) {
+    uint8_t lo, hi, zp_ptr;
+    uint16_t ptr;
+
     switch (mode) {
+    case IMPLIED:
+    case ACCUMULATOR:
+        return 0;
     case IMMEDIATE:
         return cpu->regs.pc;
     case ZERO_PAGE:
@@ -43,12 +49,33 @@ uint16_t cpu_get_op_addr(CPU_6502* cpu, AddressingMode mode) {
         return (bus_read_byte(cpu->bus, cpu->regs.pc) + cpu->regs.x) & 0xFF;
     case ZERO_PAGE_Y:
         return (bus_read_byte(cpu->bus, cpu->regs.pc) + cpu->regs.y) & 0xFF;
+    case RELATIVE:
+        return cpu->regs.pc;
     case ABSOLUTE:
         return bus_read_word(cpu->bus, cpu->regs.pc);
     case ABSOLUTE_X:
         return bus_read_word(cpu->bus, cpu->regs.pc) + cpu->regs.x;
     case ABSOLUTE_Y:
         return bus_read_word(cpu->bus, cpu->regs.pc) + cpu->regs.y;
+    case INDIRECT:
+        lo = bus_read_byte(cpu->bus, cpu->regs.pc);
+        hi = bus_read_byte(cpu->bus, cpu->regs.pc + 1);
+        ptr = lo | (hi << 8);
+        if (lo == 0xFF) {
+            // Page boundary: http://www.6502.org/tutorials/6502opcodes.html#JMP
+            return bus_read_byte(cpu->bus, ptr) |
+                   (bus_read_byte(cpu->bus, ptr & 0xFF00) << 8);
+        }
+        return bus_read_word(cpu->bus, ptr);
+    case INDEXED_INDIRECT:
+        zp_ptr = (bus_read_byte(cpu->bus, cpu->regs.pc) + cpu->regs.x) & 0xFF;
+        return bus_read_byte(cpu->bus, zp_ptr) |
+               (bus_read_byte(cpu->bus, (zp_ptr + 1) & 0xFF) << 8);
+    case INDIRECT_INDEXED:
+        zp_ptr = bus_read_byte(cpu->bus, cpu->regs.pc);
+        return (bus_read_byte(cpu->bus, zp_ptr) |
+                (bus_read_byte(cpu->bus, (zp_ptr + 1) & 0xFF) << 8)) +
+               cpu->regs.y;
     default:
         printf("unimplemented addressing mode: %d\n", mode);
         return 0;

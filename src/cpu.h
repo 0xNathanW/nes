@@ -99,20 +99,30 @@ typedef struct Registers {
 typedef enum AddressingMode {
     // No operand.
     IMPLIED,
+    // Operand is the accumulator register.
+    ACCUMULATOR,
     // Operand is the actual value.
     IMMEDIATE,
     // Address in first 256 bytes of memory (0x0000 - 0x00FF).
     ZERO_PAGE,
-    // Zero page with X offset.
+    // Zero page with X offset (wraps within zero page).
     ZERO_PAGE_X,
-    // Zero page with Y offset.
+    // Zero page with Y offset (wraps within zero page).
     ZERO_PAGE_Y,
+    // Signed 8-bit offset from PC (used for branch instructions).
+    RELATIVE,
     // Full 16-bit address.
     ABSOLUTE,
     // Absolute with X offset.
     ABSOLUTE_X,
     // Absolute with Y offset.
     ABSOLUTE_Y,
+    // Read address from memory (JMP only).
+    INDIRECT,
+    // Add X to zero page addr, then read address.
+    INDEXED_INDIRECT,
+    // Read address from zero page, then add Y.
+    INDIRECT_INDEXED,
 } AddressingMode;
 
 typedef struct CPU_6502 {
