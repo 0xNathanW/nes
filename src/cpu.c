@@ -115,5 +115,24 @@ void cpu_trace(CPU_6502* cpu) {
 
 void cpu_step(CPU_6502* cpu) {
     uint8_t opcode = bus_read_byte(cpu->bus, cpu->regs.pc++);
-    printf("opcode: %02X\n", opcode);
+
+    switch (opcode) {
+
+    // NOP
+    case 0xEA:
+        break;
+
+    // JMP - Jump to address
+    case 0x4C:
+        cpu->regs.pc = cpu_get_op_addr(cpu, ABSOLUTE);
+        break;
+    case 0x6C:
+        cpu->regs.pc = cpu_get_op_addr(cpu, INDIRECT);
+        break;
+
+    default:
+        printf("unimplemented opcode: %02X at %04X\n", opcode,
+               cpu->regs.pc - 1);
+        break;
+    }
 }
