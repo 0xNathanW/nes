@@ -138,4 +138,9 @@ void cpu_trace(CPU_6502* cpu);
 void cpu_set_flag(CPU_6502* cpu, uint8_t flag, bool value);
 bool cpu_get_flag(CPU_6502* cpu, uint8_t flag);
 
+void cpu_push_byte(CPU_6502* cpu, uint8_t data);
+uint8_t cpu_pop_byte(CPU_6502* cpu);
+void cpu_push_word(CPU_6502* cpu, uint16_t data);
+uint16_t cpu_pop_word(CPU_6502* cpu);
+
 #endif

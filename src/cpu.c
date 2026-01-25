@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#define STACK_BASE 0x0100
+
 // Cold boot.
 void cpu_power_on(CPU_6502* cpu) {
     cpu->regs.acc = 0;
@@ -30,6 +32,28 @@ void cpu_set_flag(CPU_6502* cpu, uint8_t flag, bool value) {
 
 bool cpu_get_flag(CPU_6502* cpu, uint8_t flag) {
     return (cpu->regs.p & flag) != 0;
+}
+
+// Stack operations. Stack lives at $0100-$01FF.
+void cpu_push_byte(CPU_6502* cpu, uint8_t data) {
+    bus_write_byte(cpu->bus, STACK_BASE | cpu->regs.sp, data);
+    cpu->regs.sp--;
+}
+
+uint8_t cpu_pop_byte(CPU_6502* cpu) {
+    cpu->regs.sp++;
+    return bus_read_byte(cpu->bus, STACK_BASE | cpu->regs.sp);
+}
+
+void cpu_push_word(CPU_6502* cpu, uint16_t data) {
+    cpu_push_byte(cpu, data >> 8);
+    cpu_push_byte(cpu, data & 0xFF);
+}
+
+uint16_t cpu_pop_word(CPU_6502* cpu) {
+    uint8_t lo = cpu_pop_byte(cpu);
+    uint8_t hi = cpu_pop_byte(cpu);
+    return (hi << 8) | lo;
 }
 
 // Get the address of the operand for the given addressing mode.
