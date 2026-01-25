@@ -30,7 +30,8 @@ void bus_write_byte(Bus* bus, uint16_t addr, uint8_t data) {
         printf("unimplemented: write to SRAM\n");
     }
 
-    else if (addr <= PRG_ROM_END) {
+    else {
+        // PRG-ROM ($8000-$FFFF)
         printf("unimplemented: write to cartridge\n");
     }
 }
@@ -58,7 +59,8 @@ uint8_t bus_read_byte(Bus* bus, uint16_t addr) {
         printf("unimplemented: read from SRAM\n");
     }
 
-    else if (addr <= PRG_ROM_END) {
+    else {
+        // PRG-ROM ($8000-$FFFF)
         data = cart_read_byte(bus->cartridge, addr);
     }
 
