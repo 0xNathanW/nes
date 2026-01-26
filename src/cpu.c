@@ -56,34 +56,59 @@ uint16_t cpu_pop_word(CPU_6502* cpu) {
     return (hi << 8) | lo;
 }
 
-// Get the address of the operand for the given addressing mode.
+// Get the address of the operand and advance PC.
 uint16_t cpu_get_op_addr(CPU_6502* cpu, AddressingMode mode) {
     uint8_t lo, hi, zp_ptr;
-    uint16_t ptr;
+    uint16_t addr, ptr;
 
     switch (mode) {
     case IMPLIED:
     case ACCUMULATOR:
         return 0;
+
+    // 1-byte
     case IMMEDIATE:
-        return cpu->regs.pc;
+        addr = cpu->regs.pc++;
+        return addr;
     case ZERO_PAGE:
-        return bus_read_byte(cpu->bus, cpu->regs.pc);
+        addr = bus_read_byte(cpu->bus, cpu->regs.pc++);
+        return addr;
     case ZERO_PAGE_X:
-        return (bus_read_byte(cpu->bus, cpu->regs.pc) + cpu->regs.x) & 0xFF;
+        addr = (bus_read_byte(cpu->bus, cpu->regs.pc++) + cpu->regs.x) & 0xFF;
+        return addr;
     case ZERO_PAGE_Y:
-        return (bus_read_byte(cpu->bus, cpu->regs.pc) + cpu->regs.y) & 0xFF;
+        addr = (bus_read_byte(cpu->bus, cpu->regs.pc++) + cpu->regs.y) & 0xFF;
+        return addr;
     case RELATIVE:
-        return cpu->regs.pc;
+        addr = cpu->regs.pc++;
+        return addr;
+    case INDEXED_INDIRECT:
+        zp_ptr = (bus_read_byte(cpu->bus, cpu->regs.pc++) + cpu->regs.x) & 0xFF;
+        return bus_read_byte(cpu->bus, zp_ptr) |
+               (bus_read_byte(cpu->bus, (zp_ptr + 1) & 0xFF) << 8);
+    case INDIRECT_INDEXED:
+        zp_ptr = bus_read_byte(cpu->bus, cpu->regs.pc++);
+        return (bus_read_byte(cpu->bus, zp_ptr) |
+                (bus_read_byte(cpu->bus, (zp_ptr + 1) & 0xFF) << 8)) +
+               cpu->regs.y;
+
+    // 2-byte
     case ABSOLUTE:
-        return bus_read_word(cpu->bus, cpu->regs.pc);
+        addr = bus_read_word(cpu->bus, cpu->regs.pc);
+        cpu->regs.pc += 2;
+        return addr;
     case ABSOLUTE_X:
-        return bus_read_word(cpu->bus, cpu->regs.pc) + cpu->regs.x;
+        addr = bus_read_word(cpu->bus, cpu->regs.pc) + cpu->regs.x;
+        cpu->regs.pc += 2;
+        return addr;
     case ABSOLUTE_Y:
-        return bus_read_word(cpu->bus, cpu->regs.pc) + cpu->regs.y;
+        addr = bus_read_word(cpu->bus, cpu->regs.pc) + cpu->regs.y;
+        cpu->regs.pc += 2;
+        return addr;
     case INDIRECT:
         lo = bus_read_byte(cpu->bus, cpu->regs.pc);
         hi = bus_read_byte(cpu->bus, cpu->regs.pc + 1);
+        cpu->regs.pc += 2;
         ptr = lo | (hi << 8);
         if (lo == 0xFF) {
             // Page boundary: http://www.6502.org/tutorials/6502opcodes.html#JMP
@@ -91,15 +116,7 @@ uint16_t cpu_get_op_addr(CPU_6502* cpu, AddressingMode mode) {
                    (bus_read_byte(cpu->bus, ptr & 0xFF00) << 8);
         }
         return bus_read_word(cpu->bus, ptr);
-    case INDEXED_INDIRECT:
-        zp_ptr = (bus_read_byte(cpu->bus, cpu->regs.pc) + cpu->regs.x) & 0xFF;
-        return bus_read_byte(cpu->bus, zp_ptr) |
-               (bus_read_byte(cpu->bus, (zp_ptr + 1) & 0xFF) << 8);
-    case INDIRECT_INDEXED:
-        zp_ptr = bus_read_byte(cpu->bus, cpu->regs.pc);
-        return (bus_read_byte(cpu->bus, zp_ptr) |
-                (bus_read_byte(cpu->bus, (zp_ptr + 1) & 0xFF) << 8)) +
-               cpu->regs.y;
+
     default:
         printf("unimplemented addressing mode: %d\n", mode);
         return 0;
@@ -111,6 +128,11 @@ void cpu_trace(CPU_6502* cpu) {
     fprintf(stderr, "%04X  %02X  A:%02X X:%02X Y:%02X P:%02X SP:%02X\n",
             cpu->regs.pc, opcode, cpu->regs.acc, cpu->regs.x, cpu->regs.y,
             cpu->regs.p, cpu->regs.sp);
+}
+
+static void update_zn_flags(CPU_6502* cpu, uint8_t value) {
+    cpu_set_flag(cpu, FLAG_ZERO, value == 0);
+    cpu_set_flag(cpu, FLAG_NEGATIVE, value & 0x80);
 }
 
 void cpu_step(CPU_6502* cpu) {
@@ -128,6 +150,93 @@ void cpu_step(CPU_6502* cpu) {
         break;
     case 0x6C:
         cpu->regs.pc = cpu_get_op_addr(cpu, INDIRECT);
+        break;
+
+    // LDA - Loads value into accumulator
+    case 0xA9:
+        cpu->regs.acc =
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, IMMEDIATE));
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    case 0xA5:
+        cpu->regs.acc =
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE));
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    case 0xB5:
+        cpu->regs.acc =
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE_X));
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    case 0xAD:
+        cpu->regs.acc = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE));
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    case 0xBD:
+        cpu->regs.acc =
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE_X));
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    case 0xB9:
+        cpu->regs.acc =
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE_Y));
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    case 0xA1:
+        cpu->regs.acc =
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, INDEXED_INDIRECT));
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    case 0xB1:
+        cpu->regs.acc =
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, INDIRECT_INDEXED));
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+
+    // LDX - Load value into X register
+    case 0xA2:
+        cpu->regs.x = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, IMMEDIATE));
+        update_zn_flags(cpu, cpu->regs.x);
+        break;
+    case 0xA6:
+        cpu->regs.x = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE));
+        update_zn_flags(cpu, cpu->regs.x);
+        break;
+    case 0xB6:
+        cpu->regs.x =
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE_Y));
+        update_zn_flags(cpu, cpu->regs.x);
+        break;
+    case 0xAE:
+        cpu->regs.x = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE));
+        update_zn_flags(cpu, cpu->regs.x);
+        break;
+    case 0xBE:
+        cpu->regs.x = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE_Y));
+        update_zn_flags(cpu, cpu->regs.x);
+        break;
+
+    // LDY - Load value into Y register
+    case 0xA0:
+        cpu->regs.y = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, IMMEDIATE));
+        update_zn_flags(cpu, cpu->regs.y);
+        break;
+    case 0xA4:
+        cpu->regs.y = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE));
+        update_zn_flags(cpu, cpu->regs.y);
+        break;
+    case 0xB4:
+        cpu->regs.y =
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE_X));
+        update_zn_flags(cpu, cpu->regs.y);
+        break;
+    case 0xAC:
+        cpu->regs.y = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE));
+        update_zn_flags(cpu, cpu->regs.y);
+        break;
+    case 0xBC:
+        cpu->regs.y = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE_X));
+        update_zn_flags(cpu, cpu->regs.y);
         break;
 
     default:
