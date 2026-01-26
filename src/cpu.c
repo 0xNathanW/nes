@@ -239,6 +239,59 @@ void cpu_step(CPU_6502* cpu) {
         update_zn_flags(cpu, cpu->regs.y);
         break;
 
+    // STA - Store accumulator value
+    case 0x85:
+        bus_write_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE),
+                       cpu->regs.acc);
+        break;
+    case 0x95:
+        bus_write_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE_X),
+                       cpu->regs.acc);
+        break;
+    case 0x8D:
+        bus_write_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE), cpu->regs.acc);
+        break;
+    case 0x9D:
+        bus_write_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE_X),
+                       cpu->regs.acc);
+        break;
+    case 0x99:
+        bus_write_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE_Y),
+                       cpu->regs.acc);
+        break;
+    case 0x81:
+        bus_write_byte(cpu->bus, cpu_get_op_addr(cpu, INDEXED_INDIRECT),
+                       cpu->regs.acc);
+        break;
+    case 0x91:
+        bus_write_byte(cpu->bus, cpu_get_op_addr(cpu, INDIRECT_INDEXED),
+                       cpu->regs.acc);
+        break;
+
+    // STX - Store value in X register
+    case 0x86:
+        bus_write_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE), cpu->regs.x);
+        break;
+    case 0x96:
+        bus_write_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE_Y),
+                       cpu->regs.x);
+        break;
+    case 0x8E:
+        bus_write_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE), cpu->regs.x);
+        break;
+
+    // STY - Store value in Y register
+    case 0x84:
+        bus_write_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE), cpu->regs.y);
+        break;
+    case 0x94:
+        bus_write_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE_X),
+                       cpu->regs.y);
+        break;
+    case 0x8C:
+        bus_write_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE), cpu->regs.y);
+        break;
+
     default:
         printf("unimplemented opcode: %02X at %04X\n", opcode,
                cpu->regs.pc - 1);
