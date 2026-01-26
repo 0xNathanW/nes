@@ -39,8 +39,3 @@ int nes_load_cartridge(NES* nes, const char* path) {
 }
 
 void nes_reset(NES* nes) { cpu_reset(&nes->cpu); }
-
-void nes_step(NES* nes) {
-    uint8_t opcode = bus_read_byte(&nes->bus, nes->cpu.regs.pc++);
-    printf("opcode: %02X\n", opcode);
-}

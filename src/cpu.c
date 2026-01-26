@@ -125,9 +125,9 @@ uint16_t cpu_get_op_addr(CPU_6502* cpu, AddressingMode mode) {
 
 void cpu_trace(CPU_6502* cpu) {
     uint8_t opcode = bus_read_byte(cpu->bus, cpu->regs.pc);
-    fprintf(stderr, "%04X  %02X  A:%02X X:%02X Y:%02X P:%02X SP:%02X\n",
-            cpu->regs.pc, opcode, cpu->regs.acc, cpu->regs.x, cpu->regs.y,
-            cpu->regs.p, cpu->regs.sp);
+    printf("%04X  %02X  A:%02X X:%02X Y:%02X P:%02X SP:%02X\n", cpu->regs.pc,
+           opcode, cpu->regs.acc, cpu->regs.x, cpu->regs.y, cpu->regs.p,
+           cpu->regs.sp);
 }
 
 static void update_zn_flags(CPU_6502* cpu, uint8_t value) {
