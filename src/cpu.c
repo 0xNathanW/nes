@@ -144,6 +144,14 @@ void cpu_step(CPU_6502* cpu) {
     case 0xEA:
         break;
 
+    // JSR - Jump to subroutine
+    case 0x20: {
+        uint16_t addr = cpu_get_op_addr(cpu, ABSOLUTE);
+        cpu_push_word(cpu, cpu->regs.pc - 1);
+        cpu->regs.pc = addr;
+        break;
+    }
+
     // JMP - Jump to address
     case 0x4C:
         cpu->regs.pc = cpu_get_op_addr(cpu, ABSOLUTE);
