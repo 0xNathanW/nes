@@ -140,6 +140,36 @@ void cpu_step(CPU_6502* cpu) {
 
     switch (opcode) {
 
+    // SEC - Set carry flag
+    case 0x38:
+        cpu_set_flag(cpu, FLAG_CARRY, true);
+        break;
+    // SED - Set decimal flag
+    case 0xF8:
+        cpu_set_flag(cpu, FLAG_DECIMAL, true);
+        break;
+    // SEI - Set interrupt disable
+    case 0x78:
+        cpu_set_flag(cpu, FLAG_INTERRUPT, true);
+        break;
+
+    // CLC - Clear carry flag
+    case 0x18:
+        cpu_set_flag(cpu, FLAG_CARRY, false);
+        break;
+    // CLD - Clear decimal flag
+    case 0xD8:
+        cpu_set_flag(cpu, FLAG_DECIMAL, false);
+        break;
+    // CLI - Clear interrupt disable
+    case 0x58:
+        cpu_set_flag(cpu, FLAG_INTERRUPT, false);
+        break;
+    // CLV - Clear overflow flag
+    case 0xB8:
+        cpu_set_flag(cpu, FLAG_OVERFLOW, false);
+        break;
+
     // NOP
     case 0xEA:
         break;
