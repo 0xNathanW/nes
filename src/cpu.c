@@ -206,6 +206,15 @@ void cpu_step(CPU_6502* cpu) {
     case 0x08:
         cpu_push_byte(cpu, cpu->regs.p | FLAG_BREAK | 0x20);
         break;
+    // PLA - Pull accumulator
+    case 0x68:
+        cpu->regs.acc = cpu_pop_byte(cpu);
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    // PLP - Pull processor status
+    case 0x28:
+        cpu->regs.p = (cpu_pop_byte(cpu) & ~FLAG_BREAK) | 0x20;
+        break;
 
     // RTS - Return from subroutine
     case 0x60:
