@@ -277,6 +277,48 @@ void cpu_step(CPU_6502* cpu) {
         update_zn_flags(cpu, cpu->regs.y);
         break;
 
+    // ORA - Bitwise OR with accumulator
+    case 0x09:
+        cpu->regs.acc |=
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, IMMEDIATE));
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    case 0x05:
+        cpu->regs.acc |=
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE));
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    case 0x15:
+        cpu->regs.acc |=
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE_X));
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    case 0x0D:
+        cpu->regs.acc |=
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE));
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    case 0x1D:
+        cpu->regs.acc |=
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE_X));
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    case 0x19:
+        cpu->regs.acc |=
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE_Y));
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    case 0x01:
+        cpu->regs.acc |=
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, INDEXED_INDIRECT));
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    case 0x11:
+        cpu->regs.acc |=
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, INDIRECT_INDEXED));
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+
     // STA - Store accumulator value
     case 0x85:
         bus_write_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE),
