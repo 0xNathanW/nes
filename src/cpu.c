@@ -316,6 +316,96 @@ void cpu_step(CPU_6502* cpu) {
         update_zn_flags(cpu, cpu->regs.y);
         break;
 
+    // CMP - Compare with accumulator
+    case 0xC9: {
+        uint8_t val = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, IMMEDIATE));
+        cpu_set_flag(cpu, FLAG_CARRY, cpu->regs.acc >= val);
+        update_zn_flags(cpu, cpu->regs.acc - val);
+        break;
+    }
+    case 0xC5: {
+        uint8_t val = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE));
+        cpu_set_flag(cpu, FLAG_CARRY, cpu->regs.acc >= val);
+        update_zn_flags(cpu, cpu->regs.acc - val);
+        break;
+    }
+    case 0xD5: {
+        uint8_t val = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE_X));
+        cpu_set_flag(cpu, FLAG_CARRY, cpu->regs.acc >= val);
+        update_zn_flags(cpu, cpu->regs.acc - val);
+        break;
+    }
+    case 0xCD: {
+        uint8_t val = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE));
+        cpu_set_flag(cpu, FLAG_CARRY, cpu->regs.acc >= val);
+        update_zn_flags(cpu, cpu->regs.acc - val);
+        break;
+    }
+    case 0xDD: {
+        uint8_t val = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE_X));
+        cpu_set_flag(cpu, FLAG_CARRY, cpu->regs.acc >= val);
+        update_zn_flags(cpu, cpu->regs.acc - val);
+        break;
+    }
+    case 0xD9: {
+        uint8_t val = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE_Y));
+        cpu_set_flag(cpu, FLAG_CARRY, cpu->regs.acc >= val);
+        update_zn_flags(cpu, cpu->regs.acc - val);
+        break;
+    }
+    case 0xC1: {
+        uint8_t val = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, INDEXED_INDIRECT));
+        cpu_set_flag(cpu, FLAG_CARRY, cpu->regs.acc >= val);
+        update_zn_flags(cpu, cpu->regs.acc - val);
+        break;
+    }
+    case 0xD1: {
+        uint8_t val = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, INDIRECT_INDEXED));
+        cpu_set_flag(cpu, FLAG_CARRY, cpu->regs.acc >= val);
+        update_zn_flags(cpu, cpu->regs.acc - val);
+        break;
+    }
+
+    // CPX - Compare with X register
+    case 0xE0: {
+        uint8_t val = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, IMMEDIATE));
+        cpu_set_flag(cpu, FLAG_CARRY, cpu->regs.x >= val);
+        update_zn_flags(cpu, cpu->regs.x - val);
+        break;
+    }
+    case 0xE4: {
+        uint8_t val = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE));
+        cpu_set_flag(cpu, FLAG_CARRY, cpu->regs.x >= val);
+        update_zn_flags(cpu, cpu->regs.x - val);
+        break;
+    }
+    case 0xEC: {
+        uint8_t val = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE));
+        cpu_set_flag(cpu, FLAG_CARRY, cpu->regs.x >= val);
+        update_zn_flags(cpu, cpu->regs.x - val);
+        break;
+    }
+
+    // CPY - Compare with Y register
+    case 0xC0: {
+        uint8_t val = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, IMMEDIATE));
+        cpu_set_flag(cpu, FLAG_CARRY, cpu->regs.y >= val);
+        update_zn_flags(cpu, cpu->regs.y - val);
+        break;
+    }
+    case 0xC4: {
+        uint8_t val = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE));
+        cpu_set_flag(cpu, FLAG_CARRY, cpu->regs.y >= val);
+        update_zn_flags(cpu, cpu->regs.y - val);
+        break;
+    }
+    case 0xCC: {
+        uint8_t val = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE));
+        cpu_set_flag(cpu, FLAG_CARRY, cpu->regs.y >= val);
+        update_zn_flags(cpu, cpu->regs.y - val);
+        break;
+    }
+
     // AND - Bitwise AND with accumulator
     case 0x29:
         cpu->regs.acc &=
