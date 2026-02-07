@@ -174,6 +174,22 @@ void cpu_step(CPU_6502* cpu) {
     case 0xEA:
         break;
 
+    // BIT - Bit test
+    case 0x24: {
+        uint8_t val = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE));
+        cpu_set_flag(cpu, FLAG_ZERO, (cpu->regs.acc & val) == 0);
+        cpu_set_flag(cpu, FLAG_OVERFLOW, val & 0x40);
+        cpu_set_flag(cpu, FLAG_NEGATIVE, val & 0x80);
+        break;
+    }
+    case 0x2C: {
+        uint8_t val = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE));
+        cpu_set_flag(cpu, FLAG_ZERO, (cpu->regs.acc & val) == 0);
+        cpu_set_flag(cpu, FLAG_OVERFLOW, val & 0x40);
+        cpu_set_flag(cpu, FLAG_NEGATIVE, val & 0x80);
+        break;
+    }
+
     // JSR - Jump to subroutine
     case 0x20: {
         uint16_t addr = cpu_get_op_addr(cpu, ABSOLUTE);
