@@ -198,6 +198,15 @@ void cpu_step(CPU_6502* cpu) {
         break;
     }
 
+    // PHA - Push accumulator
+    case 0x48:
+        cpu_push_byte(cpu, cpu->regs.acc);
+        break;
+    // PHP - Push processor status
+    case 0x08:
+        cpu_push_byte(cpu, cpu->regs.p | FLAG_BREAK | 0x20);
+        break;
+
     // RTS - Return from subroutine
     case 0x60:
         cpu->regs.pc = cpu_pop_word(cpu) + 1;
