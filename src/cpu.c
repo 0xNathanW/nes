@@ -198,6 +198,11 @@ void cpu_step(CPU_6502* cpu) {
         break;
     }
 
+    // RTS - Return from subroutine
+    case 0x60:
+        cpu->regs.pc = cpu_pop_word(cpu) + 1;
+        break;
+
     // JMP - Jump to address
     case 0x4C:
         cpu->regs.pc = cpu_get_op_addr(cpu, ABSOLUTE);
