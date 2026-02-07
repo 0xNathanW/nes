@@ -318,6 +318,63 @@ void cpu_step(CPU_6502* cpu) {
         bus_write_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE), cpu->regs.x);
         break;
 
+    // BCC - Branch if carry clear
+    case 0x90: {
+        int8_t offset = (int8_t)bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, RELATIVE));
+        if (!cpu_get_flag(cpu, FLAG_CARRY))
+            cpu->regs.pc += offset;
+        break;
+    }
+    // BCS - Branch if carry set
+    case 0xB0: {
+        int8_t offset = (int8_t)bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, RELATIVE));
+        if (cpu_get_flag(cpu, FLAG_CARRY))
+            cpu->regs.pc += offset;
+        break;
+    }
+    // BEQ - Branch if equal (zero set)
+    case 0xF0: {
+        int8_t offset = (int8_t)bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, RELATIVE));
+        if (cpu_get_flag(cpu, FLAG_ZERO))
+            cpu->regs.pc += offset;
+        break;
+    }
+    // BNE - Branch if not equal (zero clear)
+    case 0xD0: {
+        int8_t offset = (int8_t)bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, RELATIVE));
+        if (!cpu_get_flag(cpu, FLAG_ZERO))
+            cpu->regs.pc += offset;
+        break;
+    }
+    // BMI - Branch if minus (negative set)
+    case 0x30: {
+        int8_t offset = (int8_t)bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, RELATIVE));
+        if (cpu_get_flag(cpu, FLAG_NEGATIVE))
+            cpu->regs.pc += offset;
+        break;
+    }
+    // BPL - Branch if plus (negative clear)
+    case 0x10: {
+        int8_t offset = (int8_t)bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, RELATIVE));
+        if (!cpu_get_flag(cpu, FLAG_NEGATIVE))
+            cpu->regs.pc += offset;
+        break;
+    }
+    // BVC - Branch if overflow clear
+    case 0x50: {
+        int8_t offset = (int8_t)bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, RELATIVE));
+        if (!cpu_get_flag(cpu, FLAG_OVERFLOW))
+            cpu->regs.pc += offset;
+        break;
+    }
+    // BVS - Branch if overflow set
+    case 0x70: {
+        int8_t offset = (int8_t)bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, RELATIVE));
+        if (cpu_get_flag(cpu, FLAG_OVERFLOW))
+            cpu->regs.pc += offset;
+        break;
+    }
+
     // STY - Store value in Y register
     case 0x84:
         bus_write_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE), cpu->regs.y);
