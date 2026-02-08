@@ -198,6 +198,36 @@ void cpu_step(CPU_6502* cpu) {
         break;
     }
 
+    // TAX - Transfer accumulator to X
+    case 0xAA:
+        cpu->regs.x = cpu->regs.acc;
+        update_zn_flags(cpu, cpu->regs.x);
+        break;
+    // TAY - Transfer accumulator to Y
+    case 0xA8:
+        cpu->regs.y = cpu->regs.acc;
+        update_zn_flags(cpu, cpu->regs.y);
+        break;
+    // TXA - Transfer X to accumulator
+    case 0x8A:
+        cpu->regs.acc = cpu->regs.x;
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    // TYA - Transfer Y to accumulator
+    case 0x98:
+        cpu->regs.acc = cpu->regs.y;
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    // TSX - Transfer stack pointer to X
+    case 0xBA:
+        cpu->regs.x = cpu->regs.sp;
+        update_zn_flags(cpu, cpu->regs.x);
+        break;
+    // TXS - Transfer X to stack pointer
+    case 0x9A:
+        cpu->regs.sp = cpu->regs.x;
+        break;
+
     // PHA - Push accumulator
     case 0x48:
         cpu_push_byte(cpu, cpu->regs.acc);
