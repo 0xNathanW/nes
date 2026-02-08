@@ -179,6 +179,15 @@ void cpu_step(CPU_6502* cpu) {
         cpu_set_flag(cpu, FLAG_OVERFLOW, false);
         break;
 
+    // BRK - Force interrupt
+    case 0x00:
+        cpu->regs.pc++;
+        cpu_push_word(cpu, cpu->regs.pc);
+        cpu_push_byte(cpu, cpu->regs.p | FLAG_BREAK | 0x20);
+        cpu_set_flag(cpu, FLAG_INTERRUPT, true);
+        cpu->regs.pc = bus_read_word(cpu->bus, 0xFFFE);
+        break;
+
     // NOP
     case 0xEA:
         break;
