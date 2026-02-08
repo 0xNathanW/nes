@@ -567,6 +567,49 @@ void cpu_step(CPU_6502* cpu) {
         update_zn_flags(cpu, cpu->regs.acc);
         break;
 
+    // ASL - Arithmetic shift left
+    case 0x0A:
+        cpu_set_flag(cpu, FLAG_CARRY, cpu->regs.acc & 0x80);
+        cpu->regs.acc <<= 1;
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    case 0x06: {
+        uint16_t addr = cpu_get_op_addr(cpu, ZERO_PAGE);
+        uint8_t val = bus_read_byte(cpu->bus, addr);
+        cpu_set_flag(cpu, FLAG_CARRY, val & 0x80);
+        val <<= 1;
+        bus_write_byte(cpu->bus, addr, val);
+        update_zn_flags(cpu, val);
+        break;
+    }
+    case 0x16: {
+        uint16_t addr = cpu_get_op_addr(cpu, ZERO_PAGE_X);
+        uint8_t val = bus_read_byte(cpu->bus, addr);
+        cpu_set_flag(cpu, FLAG_CARRY, val & 0x80);
+        val <<= 1;
+        bus_write_byte(cpu->bus, addr, val);
+        update_zn_flags(cpu, val);
+        break;
+    }
+    case 0x0E: {
+        uint16_t addr = cpu_get_op_addr(cpu, ABSOLUTE);
+        uint8_t val = bus_read_byte(cpu->bus, addr);
+        cpu_set_flag(cpu, FLAG_CARRY, val & 0x80);
+        val <<= 1;
+        bus_write_byte(cpu->bus, addr, val);
+        update_zn_flags(cpu, val);
+        break;
+    }
+    case 0x1E: {
+        uint16_t addr = cpu_get_op_addr(cpu, ABSOLUTE_X);
+        uint8_t val = bus_read_byte(cpu->bus, addr);
+        cpu_set_flag(cpu, FLAG_CARRY, val & 0x80);
+        val <<= 1;
+        bus_write_byte(cpu->bus, addr, val);
+        update_zn_flags(cpu, val);
+        break;
+    }
+
     // LSR - Logical shift right
     case 0x4A:
         cpu_set_flag(cpu, FLAG_CARRY, cpu->regs.acc & 0x01);
