@@ -653,6 +653,104 @@ void cpu_step(CPU_6502* cpu) {
         break;
     }
 
+    // ROL - Rotate left
+    case 0x2A: {
+        bool old_carry = cpu_get_flag(cpu, FLAG_CARRY);
+        cpu_set_flag(cpu, FLAG_CARRY, cpu->regs.acc & 0x80);
+        cpu->regs.acc = (cpu->regs.acc << 1) | old_carry;
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    }
+    case 0x26: {
+        uint16_t addr = cpu_get_op_addr(cpu, ZERO_PAGE);
+        uint8_t val = bus_read_byte(cpu->bus, addr);
+        bool old_carry = cpu_get_flag(cpu, FLAG_CARRY);
+        cpu_set_flag(cpu, FLAG_CARRY, val & 0x80);
+        val = (val << 1) | old_carry;
+        bus_write_byte(cpu->bus, addr, val);
+        update_zn_flags(cpu, val);
+        break;
+    }
+    case 0x36: {
+        uint16_t addr = cpu_get_op_addr(cpu, ZERO_PAGE_X);
+        uint8_t val = bus_read_byte(cpu->bus, addr);
+        bool old_carry = cpu_get_flag(cpu, FLAG_CARRY);
+        cpu_set_flag(cpu, FLAG_CARRY, val & 0x80);
+        val = (val << 1) | old_carry;
+        bus_write_byte(cpu->bus, addr, val);
+        update_zn_flags(cpu, val);
+        break;
+    }
+    case 0x2E: {
+        uint16_t addr = cpu_get_op_addr(cpu, ABSOLUTE);
+        uint8_t val = bus_read_byte(cpu->bus, addr);
+        bool old_carry = cpu_get_flag(cpu, FLAG_CARRY);
+        cpu_set_flag(cpu, FLAG_CARRY, val & 0x80);
+        val = (val << 1) | old_carry;
+        bus_write_byte(cpu->bus, addr, val);
+        update_zn_flags(cpu, val);
+        break;
+    }
+    case 0x3E: {
+        uint16_t addr = cpu_get_op_addr(cpu, ABSOLUTE_X);
+        uint8_t val = bus_read_byte(cpu->bus, addr);
+        bool old_carry = cpu_get_flag(cpu, FLAG_CARRY);
+        cpu_set_flag(cpu, FLAG_CARRY, val & 0x80);
+        val = (val << 1) | old_carry;
+        bus_write_byte(cpu->bus, addr, val);
+        update_zn_flags(cpu, val);
+        break;
+    }
+
+    // ROR - Rotate right
+    case 0x6A: {
+        bool old_carry = cpu_get_flag(cpu, FLAG_CARRY);
+        cpu_set_flag(cpu, FLAG_CARRY, cpu->regs.acc & 0x01);
+        cpu->regs.acc = (cpu->regs.acc >> 1) | (old_carry << 7);
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    }
+    case 0x66: {
+        uint16_t addr = cpu_get_op_addr(cpu, ZERO_PAGE);
+        uint8_t val = bus_read_byte(cpu->bus, addr);
+        bool old_carry = cpu_get_flag(cpu, FLAG_CARRY);
+        cpu_set_flag(cpu, FLAG_CARRY, val & 0x01);
+        val = (val >> 1) | (old_carry << 7);
+        bus_write_byte(cpu->bus, addr, val);
+        update_zn_flags(cpu, val);
+        break;
+    }
+    case 0x76: {
+        uint16_t addr = cpu_get_op_addr(cpu, ZERO_PAGE_X);
+        uint8_t val = bus_read_byte(cpu->bus, addr);
+        bool old_carry = cpu_get_flag(cpu, FLAG_CARRY);
+        cpu_set_flag(cpu, FLAG_CARRY, val & 0x01);
+        val = (val >> 1) | (old_carry << 7);
+        bus_write_byte(cpu->bus, addr, val);
+        update_zn_flags(cpu, val);
+        break;
+    }
+    case 0x6E: {
+        uint16_t addr = cpu_get_op_addr(cpu, ABSOLUTE);
+        uint8_t val = bus_read_byte(cpu->bus, addr);
+        bool old_carry = cpu_get_flag(cpu, FLAG_CARRY);
+        cpu_set_flag(cpu, FLAG_CARRY, val & 0x01);
+        val = (val >> 1) | (old_carry << 7);
+        bus_write_byte(cpu->bus, addr, val);
+        update_zn_flags(cpu, val);
+        break;
+    }
+    case 0x7E: {
+        uint16_t addr = cpu_get_op_addr(cpu, ABSOLUTE_X);
+        uint8_t val = bus_read_byte(cpu->bus, addr);
+        bool old_carry = cpu_get_flag(cpu, FLAG_CARRY);
+        cpu_set_flag(cpu, FLAG_CARRY, val & 0x01);
+        val = (val >> 1) | (old_carry << 7);
+        bus_write_byte(cpu->bus, addr, val);
+        update_zn_flags(cpu, val);
+        break;
+    }
+
     // EOR - Exclusive OR with accumulator
     case 0x49:
         cpu->regs.acc ^=
