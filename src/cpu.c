@@ -248,6 +248,17 @@ void cpu_step(CPU_6502* cpu) {
         update_zn_flags(cpu, cpu->regs.y);
         break;
 
+    // INX - Increment X
+    case 0xE8:
+        cpu->regs.x++;
+        update_zn_flags(cpu, cpu->regs.x);
+        break;
+    // DEX - Decrement X
+    case 0xCA:
+        cpu->regs.x--;
+        update_zn_flags(cpu, cpu->regs.x);
+        break;
+
     // PHA - Push accumulator
     case 0x48:
         cpu_push_byte(cpu, cpu->regs.acc);
