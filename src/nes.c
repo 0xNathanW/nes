@@ -21,7 +21,7 @@ NES* nes_create() {
 void nes_destroy(NES* nes) {
     if (nes) {
         if (nes->cartridge) {
-            free(nes->cartridge);
+            free_cart(nes->cartridge);
         }
         free(nes);
     }

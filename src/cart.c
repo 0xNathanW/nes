@@ -45,12 +45,13 @@ Cartridge* load_cart(const char* path) {
 
     if (fread(&cart->header, sizeof(struct CartHeader), 1, file) != 1) {
         printf("error: could not read cart header\n");
-        free(cart);
+        free_cart(cart);
         fclose(file);
         return NULL;
     }
 
     if (!is_header_valid(&cart->header)) {
+        free_cart(cart);
         fclose(file);
         return NULL;
     }
@@ -68,13 +69,13 @@ Cartridge* load_cart(const char* path) {
         cart->trainer = malloc(512);
         if (!cart->trainer) {
             printf("error: unable to allocate memory for trainer\n");
-            free(cart);
+            free_cart(cart);
             fclose(file);
             return NULL;
         }
         if (fread(cart->trainer, 512, 1, file) != 1) {
             printf("error: unable to read trainer data\n");
-            free(cart);
+            free_cart(cart);
             fclose(file);
             return NULL;
         }
@@ -86,13 +87,13 @@ Cartridge* load_cart(const char* path) {
         cart->prg_rom = malloc(prg_bytes);
         if (!cart->prg_rom) {
             printf("error: unable to allocate memory for program code\n");
-            free(cart);
+            free_cart(cart);
             fclose(file);
             return NULL;
         }
         if (fread(cart->prg_rom, prg_bytes, 1, file) != 1) {
             printf("error: unable to read program code\n");
-            free(cart);
+            free_cart(cart);
             fclose(file);
             return NULL;
         }
@@ -104,13 +105,13 @@ Cartridge* load_cart(const char* path) {
         cart->chr_rom = malloc(chr_bytes);
         if (!cart->chr_rom) {
             printf("error: unable to allocate memory for graphics data\n");
-            free(cart);
+            free_cart(cart);
             fclose(file);
             return NULL;
         }
         if (fread(cart->chr_rom, chr_bytes, 1, file) != 1) {
             printf("error: unable to read graphics data\n");
-            free(cart);
+            free_cart(cart);
             fclose(file);
             return NULL;
         }
