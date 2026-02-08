@@ -11,7 +11,7 @@ void cpu_power_on(CPU_6502* cpu) {
     cpu->regs.x = 0;
     cpu->regs.y = 0;
     cpu->regs.sp = 0xFD;
-    cpu->regs.p = 0x34;
+    cpu->regs.p = 0x24;
     cpu->regs.pc = bus_read_word(cpu->bus, 0xFFFC);
 }
 
