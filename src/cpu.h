@@ -128,11 +128,13 @@ typedef enum AddressingMode {
 typedef struct CPU_6502 {
     Registers regs;
     Bus* bus;
+    bool nmi_pending;
 } CPU_6502;
 
 void cpu_power_on(CPU_6502* cpu);
 void cpu_reset(CPU_6502* cpu);
-void cpu_step(CPU_6502* cpu);
+int cpu_step(CPU_6502* cpu);
+void cpu_nmi(CPU_6502* cpu);
 void cpu_trace(CPU_6502* cpu);
 
 void cpu_set_flag(CPU_6502* cpu, uint8_t flag, bool value);

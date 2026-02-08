@@ -165,7 +165,21 @@ static void cpu_adc(CPU_6502* cpu, uint8_t val) {
     update_zn_flags(cpu, cpu->regs.acc);
 }
 
-void cpu_step(CPU_6502* cpu) {
+// Non-maskable interrupt.
+void cpu_nmi(CPU_6502* cpu) {
+    cpu_push_word(cpu, cpu->regs.pc);
+    cpu_push_byte(cpu, (cpu->regs.p & ~FLAG_BREAK) | 0x20);
+    cpu_set_flag(cpu, FLAG_INTERRUPT, true);
+    cpu->regs.pc = bus_read_word(cpu->bus, 0xFFFA);
+}
+
+int cpu_step(CPU_6502* cpu) {
+    if (cpu->nmi_pending) {
+        cpu_nmi(cpu);
+        cpu->nmi_pending = false;
+        return 7;
+    }
+
     uint8_t opcode = bus_read_byte(cpu->bus, cpu->regs.pc++);
 
     switch (opcode) {
