@@ -277,6 +277,12 @@ void cpu_step(CPU_6502* cpu) {
         cpu->regs.p = (cpu_pop_byte(cpu) & ~FLAG_BREAK) | 0x20;
         break;
 
+    // RTI - Return from interrupt
+    case 0x40:
+        cpu->regs.p = (cpu_pop_byte(cpu) & ~FLAG_BREAK) | 0x20;
+        cpu->regs.pc = cpu_pop_word(cpu);
+        break;
+
     // RTS - Return from subroutine
     case 0x60:
         cpu->regs.pc = cpu_pop_word(cpu) + 1;
