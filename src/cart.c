@@ -11,8 +11,7 @@ bool is_header_valid(struct CartHeader* header) {
     }
 
     if ((header->flags7 & 0x0C) == 0x08) {
-        printf("warning: detected ines 2.0, treating as ines\n");
-        return false;
+        printf("info: iNES 2.0 detected, parsing as iNES 1.0\n");
     }
 
     // Don't support ines 2.0 atm.
