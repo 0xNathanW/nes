@@ -143,10 +143,7 @@ void print_cart_info(Cartridge* cart) {
     printf("CHR ROM size: %d KB\n", cart->chr_rom_size * 8);
     printf("Mapper number: %d\n", cart->mapper_number);
     printf("Mirroring: %s\n",
-           cart->nametable_arrangement ? "horizontal" : "vertical");
-    if (cart->alternative_nametable_arrangement) {
-        printf("Alternative nametable arrangement\n");
-    }
+           cart->nametable_arrangement ? "vertical" : "horizontal");
     if (cart->is_battery_backed) {
         printf("Battery backed memory present\n");
     }
@@ -175,4 +172,12 @@ void cart_write_byte(Cartridge* cart, uint16_t addr, uint8_t data) {
     (void)cart;
     (void)addr;
     (void)data;
+}
+
+uint8_t cart_read_chr(Cartridge* cart, uint16_t addr) {
+    // Mapper 0: CHR-ROM mapped directly at $0000-$1FFF
+    if (addr < 0x2000 && cart->chr_rom) {
+        return cart->chr_rom[addr];
+    }
+    return 0;
 }

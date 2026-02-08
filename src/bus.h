@@ -69,10 +69,12 @@ _____________	0x0000
 #define PPU_MIRROR_TO_BASE(addr) (PPU_START + ((addr) & 0x0007))
 
 struct Cartridge;
+struct PPU;
 
 typedef struct Bus {
     uint8_t ram[RAM_SIZE];
     struct Cartridge* cartridge;
+    struct PPU* ppu;
 } Bus;
 
 void bus_init(Bus* bus);

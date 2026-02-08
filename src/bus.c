@@ -1,5 +1,6 @@
 #include "bus.h"
 #include "cart.h"
+#include "ppu.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -15,7 +16,16 @@ void bus_write_byte(Bus* bus, uint16_t addr, uint8_t data) {
     }
 
     else if (addr <= PPU_MIRROR_END) {
-        printf("unimplemented: write to PPU\n");
+        ppu_write_register(bus->ppu, PPU_MIRROR_TO_BASE(addr), data);
+    }
+
+    else if (addr == 0x4014) {
+        // OAM DMA: copy 256 bytes from CPU page to OAM
+        uint16_t page = (uint16_t)data << 8;
+        for (int i = 0; i < 256; i++) {
+            bus->ppu->oam[(bus->ppu->oam_addr + i) & 0xFF] =
+                bus_read_byte(bus, page + i);
+        }
     }
 
     else if (addr <= IO_END) {
@@ -44,7 +54,7 @@ uint8_t bus_read_byte(Bus* bus, uint16_t addr) {
     }
 
     else if (addr <= PPU_MIRROR_END) {
-        printf("unimplemented: read from PPU\n");
+        data = ppu_read_register(bus->ppu, PPU_MIRROR_TO_BASE(addr));
     }
 
     else if (addr <= IO_END) {

@@ -13,7 +13,9 @@ NES* nes_create() {
     memset(nes, 0, sizeof(NES));
 
     bus_init(&nes->bus);
+    ppu_init(&nes->ppu);
     nes->cpu.bus = &nes->bus;
+    nes->bus.ppu = &nes->ppu;
 
     return nes;
 }
@@ -34,8 +36,24 @@ int nes_load_cartridge(NES* nes, const char* path) {
     }
 
     nes->bus.cartridge = nes->cartridge;
+    ppu_connect_cartridge(&nes->ppu, nes->cartridge);
     cpu_power_on(&nes->cpu);
     return 1;
 }
 
 void nes_reset(NES* nes) { cpu_reset(&nes->cpu); }
+
+void nes_step(NES* nes) {
+    int cpu_cycles = cpu_step(&nes->cpu);
+
+    // PPU runs 3 dots per CPU cycle
+    for (int i = 0; i < cpu_cycles * 3; i++) {
+        ppu_step(&nes->ppu);
+    }
+
+    // Check if PPU wants to trigger an NMI
+    if (ppu_nmi_pending(&nes->ppu)) {
+        nes->cpu.nmi_pending = true;
+        ppu_clear_nmi(&nes->ppu);
+    }
+}

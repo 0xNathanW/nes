@@ -4,10 +4,12 @@
 #include "bus.h"
 #include "cart.h"
 #include "cpu.h"
+#include "ppu.h"
 
 typedef struct NES {
     CPU_6502 cpu;
     Bus bus;
+    PPU ppu;
     Cartridge* cartridge;
 } NES;
 

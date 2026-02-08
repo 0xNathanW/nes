@@ -11,7 +11,6 @@
 TODO: do we need to keep header in the cart?
 */
 
-#define TRAINER_SIZE 512
 // 16KB
 #define PRG_BLOCK 16384
 // 8KB
@@ -30,8 +29,8 @@ struct CartHeader {
     /*
     76543210
     ||||||||
-    |||||||+- Nametable arrangement: 0: vertical arrangement ("horizontal mirrored") (CIRAM A10 = PPU A11)
-    |||||||                          1: horizontal arrangement ("vertically mirrored") (CIRAM A10 = PPU A10)
+    |||||||+- Nametable arrangement: 0: horizontal mirroring (CIRAM A10 = PPU A11)
+    |||||||                          1: vertical mirroring   (CIRAM A10 = PPU A10)
     ||||||+-- 1: Cartridge contains battery-backed PRG RAM ($6000-7FFF) or other persistent memory
     |||||+--- 1: 512-byte trainer at $7000-$71FF (stored before PRG data)
     ||||+---- 1: Alternative nametable layout
@@ -87,9 +86,8 @@ typedef struct Cartridge {
     // Part of ROM that contains graphics data, size defined in header.
     uint8_t chr_rom_size;
     uint8_t* chr_rom;
-    // 0 = vertical arragement, 1 = horizontal arrangement.
+    // 0 = horizontal mirroring, 1 = vertical mirroring.
     uint8_t nametable_arrangement;
-    bool alternative_nametable_arrangement;
     // Persistant memory is usualy in the form of battery backed prg-ram at
     // 0x6000, but there mapper specific exceptions.
     bool is_battery_backed;
@@ -102,5 +100,8 @@ void print_cart_info(Cartridge* cart);
 
 uint8_t cart_read_byte(Cartridge* cart, uint16_t addr);
 void cart_write_byte(Cartridge* cart, uint16_t addr, uint8_t data);
+
+// PPU-side CHR-ROM access ($0000-$1FFF in PPU address space)
+uint8_t cart_read_chr(Cartridge* cart, uint16_t addr);
 
 #endif
