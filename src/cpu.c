@@ -567,6 +567,49 @@ void cpu_step(CPU_6502* cpu) {
         update_zn_flags(cpu, cpu->regs.acc);
         break;
 
+    // LSR - Logical shift right
+    case 0x4A:
+        cpu_set_flag(cpu, FLAG_CARRY, cpu->regs.acc & 0x01);
+        cpu->regs.acc >>= 1;
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    case 0x46: {
+        uint16_t addr = cpu_get_op_addr(cpu, ZERO_PAGE);
+        uint8_t val = bus_read_byte(cpu->bus, addr);
+        cpu_set_flag(cpu, FLAG_CARRY, val & 0x01);
+        val >>= 1;
+        bus_write_byte(cpu->bus, addr, val);
+        update_zn_flags(cpu, val);
+        break;
+    }
+    case 0x56: {
+        uint16_t addr = cpu_get_op_addr(cpu, ZERO_PAGE_X);
+        uint8_t val = bus_read_byte(cpu->bus, addr);
+        cpu_set_flag(cpu, FLAG_CARRY, val & 0x01);
+        val >>= 1;
+        bus_write_byte(cpu->bus, addr, val);
+        update_zn_flags(cpu, val);
+        break;
+    }
+    case 0x4E: {
+        uint16_t addr = cpu_get_op_addr(cpu, ABSOLUTE);
+        uint8_t val = bus_read_byte(cpu->bus, addr);
+        cpu_set_flag(cpu, FLAG_CARRY, val & 0x01);
+        val >>= 1;
+        bus_write_byte(cpu->bus, addr, val);
+        update_zn_flags(cpu, val);
+        break;
+    }
+    case 0x5E: {
+        uint16_t addr = cpu_get_op_addr(cpu, ABSOLUTE_X);
+        uint8_t val = bus_read_byte(cpu->bus, addr);
+        cpu_set_flag(cpu, FLAG_CARRY, val & 0x01);
+        val >>= 1;
+        bus_write_byte(cpu->bus, addr, val);
+        update_zn_flags(cpu, val);
+        break;
+    }
+
     // EOR - Exclusive OR with accumulator
     case 0x49:
         cpu->regs.acc ^=
