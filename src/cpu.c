@@ -237,6 +237,17 @@ void cpu_step(CPU_6502* cpu) {
         cpu->regs.sp = cpu->regs.x;
         break;
 
+    // INY - Increment Y
+    case 0xC8:
+        cpu->regs.y++;
+        update_zn_flags(cpu, cpu->regs.y);
+        break;
+    // DEY - Decrement Y
+    case 0x88:
+        cpu->regs.y--;
+        update_zn_flags(cpu, cpu->regs.y);
+        break;
+
     // PHA - Push accumulator
     case 0x48:
         cpu_push_byte(cpu, cpu->regs.acc);
