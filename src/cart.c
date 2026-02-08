@@ -4,10 +4,9 @@
 #include <string.h>
 
 bool is_header_valid(struct CartHeader* header) {
-
     char expected_signature[4] = {0x4E, 0x45, 0x53, 0x1A};
     if (memcmp(expected_signature, header->signature, 4)) {
-        printf("error: header signature is invalid");
+        printf("error: not a valid iNES ROM (bad signature)\n");
         return false;
     }
 
