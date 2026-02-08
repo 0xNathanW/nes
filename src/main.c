@@ -1,131 +1,131 @@
-#include "cart.h"
-#include "cpu.h"
 #include "nes.h"
+#include <SDL.h>
+#include <stdio.h>
 
-#define NESTEST_INSTRUCTION_LIMIT 8991
-#define LOG_PATH "../test_roms/nestest_simple.log"
-#define MAX_LINE 128
+#define WINDOW_SCALE 3
+#define WINDOW_WIDTH (NES_WIDTH * WINDOW_SCALE)
+#define WINDOW_HEIGHT (NES_HEIGHT * WINDOW_SCALE)
 
-typedef struct {
-    uint16_t pc;
-    uint8_t opcode;
-    uint8_t a, x, y, p, sp;
-} ExpectedState;
-
-static int parse_log_line(const char* line, ExpectedState* state) {
-    unsigned pc, opcode, a, x, y, p, sp;
-    int n = sscanf(line, "%X %X A:%X X:%X Y:%X P:%X SP:%X",
-                   &pc, &opcode, &a, &x, &y, &p, &sp);
-    if (n != 7)
-        return 0;
-    state->pc = (uint16_t)pc;
-    state->opcode = (uint8_t)opcode;
-    state->a = (uint8_t)a;
-    state->x = (uint8_t)x;
-    state->y = (uint8_t)y;
-    state->p = (uint8_t)p;
-    state->sp = (uint8_t)sp;
-    return 1;
-}
-
-static int verify_state(CPU_6502* cpu, ExpectedState* expected, int line_num,
-                        ExpectedState* prev) {
-    uint8_t opcode = bus_read_byte(cpu->bus, cpu->regs.pc);
-    int pass = 1;
-
-    if (cpu->regs.pc != expected->pc) pass = 0;
-    if (opcode != expected->opcode) pass = 0;
-    if (cpu->regs.acc != expected->a) pass = 0;
-    if (cpu->regs.x != expected->x) pass = 0;
-    if (cpu->regs.y != expected->y) pass = 0;
-    if (cpu->regs.p != expected->p) pass = 0;
-    if (cpu->regs.sp != expected->sp) pass = 0;
-
-    if (!pass) {
-        if (prev) {
-            printf("instruction %d: %04X  %02X  A:%02X X:%02X Y:%02X P:%02X SP:%02X\n",
-                   line_num - 1, prev->pc, prev->opcode, prev->a, prev->x,
-                   prev->y, prev->p, prev->sp);
-        }
-        printf("MISMATCH at instruction %d:\n", line_num);
-        printf("  expected: %04X  %02X  A:%02X X:%02X Y:%02X P:%02X SP:%02X\n",
-               expected->pc, expected->opcode, expected->a, expected->x,
-               expected->y, expected->p, expected->sp);
-        printf("  actual:   %04X  %02X  A:%02X X:%02X Y:%02X P:%02X SP:%02X\n",
-               cpu->regs.pc, opcode, cpu->regs.acc, cpu->regs.x,
-               cpu->regs.y, cpu->regs.p, cpu->regs.sp);
-
-        // Show which fields differ
-        printf("  diff:    ");
-        if (cpu->regs.pc != expected->pc) printf(" PC");
-        if (opcode != expected->opcode) printf(" OP");
-        if (cpu->regs.acc != expected->a) printf(" A");
-        if (cpu->regs.x != expected->x) printf(" X");
-        if (cpu->regs.y != expected->y) printf(" Y");
-        if (cpu->regs.p != expected->p) printf(" P");
-        if (cpu->regs.sp != expected->sp) printf(" SP");
-        printf("\n");
-    }
-
-    return pass;
-}
+// clang-format off
+static const uint32_t NES_PALETTE[64] = {
+    0x666666, 0x002A88, 0x1412A7, 0x3B00A4,
+    0x5C007E, 0x6E0040, 0x6C0600, 0x561D00,
+    0x333500, 0x0B4800, 0x005200, 0x004F08,
+    0x00404D, 0x000000, 0x000000, 0x000000,
+    0xADADAD, 0x155FD9, 0x4240FF, 0x7527FE,
+    0xA01ACC, 0xB71E7B, 0xB53120, 0x994E00,
+    0x6B6D00, 0x388700, 0x0C9300, 0x008F32,
+    0x007C8D, 0x000000, 0x000000, 0x000000,
+    0xFFFEFF, 0x64B0FF, 0x9290FF, 0xC676FF,
+    0xF36AFF, 0xFE6ECC, 0xFE8170, 0xEA9E22,
+    0xBCBE00, 0x88D800, 0x5CE430, 0x45E082,
+    0x48CDDE, 0x4F4F4F, 0x000000, 0x000000,
+    0xFFFEFF, 0xC0DFFF, 0xD3D2FF, 0xE8C8FF,
+    0xFBC2FF, 0xFEC4EA, 0xFECCC5, 0xF7D8A5,
+    0xE4E594, 0xCFEF96, 0xBDF4AB, 0xB3F3CC,
+    0xB5EBF2, 0xB8B8B8, 0x000000, 0x000000,
+};
+// clang-format on
 
 int main(int argc, char* argv[]) {
-    const char* rom_path = (argc > 1) ? argv[1] : "../test_roms/nestest.nes";
+    if (argc < 2) {
+        printf("usage: nes <rom.nes>\n");
+        return 1;
+    }
+
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        printf("error: SDL initialisation failed: %s\n", SDL_GetError());
+        return 1;
+    }
+
+    SDL_Window* window =
+        SDL_CreateWindow("NES", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                         WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    if (!window) {
+        printf("error: SDL window creation failed: %s\n", SDL_GetError());
+        SDL_Quit();
+        return 1;
+    }
+
+    SDL_Renderer* renderer = SDL_CreateRenderer(
+        window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    if (!renderer) {
+        printf("error: renderer creation failed: %s\n", SDL_GetError());
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return 1;
+    }
+
+    SDL_Texture* texture =
+        SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
+                          SDL_TEXTUREACCESS_STREAMING, NES_WIDTH, NES_HEIGHT);
+    if (!texture) {
+        printf("error: texture creation failed: %s\n", SDL_GetError());
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return 1;
+    }
 
     NES* nes = nes_create();
     if (!nes) {
         printf("error: could not create NES\n");
+        SDL_DestroyTexture(texture);
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
         return 1;
     }
 
-    if (!nes_load_cartridge(nes, rom_path)) {
-        printf("error: could not load cartridge: %s\n", rom_path);
+    if (!nes_load_cartridge(nes, argv[1])) {
+        printf("error: could not load cartridge: %s\n", argv[1]);
         nes_destroy(nes);
+        SDL_DestroyTexture(texture);
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
         return 1;
     }
 
     print_cart_info(nes->cartridge);
 
-    FILE* log = fopen(LOG_PATH, "r");
-    if (!log) {
-        printf("error: could not open log: %s\n", LOG_PATH);
-        nes_destroy(nes);
-        return 1;
+    uint32_t pixels[NES_WIDTH * NES_HEIGHT];
+    bool running = true;
+
+    while (running) {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                running = false;
+            }
+            if (event.type == SDL_KEYDOWN &&
+                event.key.keysym.sym == SDLK_ESCAPE) {
+                running = false;
+            }
+        }
+
+        // Run one frame
+        nes->ppu.frame_complete = false;
+        while (!nes->ppu.frame_complete) {
+            nes_step(nes);
+        }
+
+        // Convert framebuffer palette indices to ARGB
+        for (int i = 0; i < NES_WIDTH * NES_HEIGHT; i++) {
+            uint8_t pal_index = nes->ppu.framebuf[i] & 0x3F;
+            pixels[i] = 0xFF000000 | NES_PALETTE[pal_index];
+        }
+
+        SDL_UpdateTexture(texture, NULL, pixels, NES_WIDTH * sizeof(uint32_t));
+        SDL_RenderClear(renderer);
+        SDL_RenderCopy(renderer, texture, NULL, NULL);
+        SDL_RenderPresent(renderer);
     }
 
-    // For nestest automation mode, start at $C000
-    nes->cpu.regs.pc = 0xC000;
-
-    char line[MAX_LINE];
-    int line_num = 0;
-    ExpectedState prev = {0};
-
-    for (int i = 0; i < NESTEST_INSTRUCTION_LIMIT; i++) {
-        if (!fgets(line, sizeof(line), log)) {
-            printf("log ended early at instruction %d\n", i + 1);
-            break;
-        }
-        line_num++;
-
-        ExpectedState expected;
-        if (!parse_log_line(line, &expected)) {
-            printf("error: could not parse log line %d: %s", line_num, line);
-            break;
-        }
-
-        if (!verify_state(&nes->cpu, &expected, line_num,
-                          line_num > 1 ? &prev : NULL)) {
-            break;
-        }
-
-        prev = expected;
-        cpu_step(&nes->cpu);
-    }
-
-    printf("verified %d instructions\n", line_num);
-
-    fclose(log);
     nes_destroy(nes);
+    SDL_DestroyTexture(texture);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
     return 0;
 }
