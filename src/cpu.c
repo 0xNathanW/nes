@@ -478,6 +478,48 @@ void cpu_step(CPU_6502* cpu) {
         update_zn_flags(cpu, cpu->regs.acc);
         break;
 
+    // EOR - Exclusive OR with accumulator
+    case 0x49:
+        cpu->regs.acc ^=
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, IMMEDIATE));
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    case 0x45:
+        cpu->regs.acc ^=
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE));
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    case 0x55:
+        cpu->regs.acc ^=
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE_X));
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    case 0x4D:
+        cpu->regs.acc ^=
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE));
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    case 0x5D:
+        cpu->regs.acc ^=
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE_X));
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    case 0x59:
+        cpu->regs.acc ^=
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE_Y));
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    case 0x41:
+        cpu->regs.acc ^=
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, INDEXED_INDIRECT));
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+    case 0x51:
+        cpu->regs.acc ^=
+            bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, INDIRECT_INDEXED));
+        update_zn_flags(cpu, cpu->regs.acc);
+        break;
+
     // ORA - Bitwise OR with accumulator
     case 0x09:
         cpu->regs.acc |=
