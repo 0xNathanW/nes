@@ -135,6 +135,15 @@ static void update_zn_flags(CPU_6502* cpu, uint8_t value) {
     cpu_set_flag(cpu, FLAG_NEGATIVE, value & 0x80);
 }
 
+static void cpu_adc(CPU_6502* cpu, uint8_t val) {
+    uint16_t sum = cpu->regs.acc + val + cpu_get_flag(cpu, FLAG_CARRY);
+    cpu_set_flag(cpu, FLAG_CARRY, sum > 0xFF);
+    cpu_set_flag(cpu, FLAG_OVERFLOW,
+                 (~(cpu->regs.acc ^ val) & (cpu->regs.acc ^ sum)) & 0x80);
+    cpu->regs.acc = (uint8_t)sum;
+    update_zn_flags(cpu, cpu->regs.acc);
+}
+
 void cpu_step(CPU_6502* cpu) {
     uint8_t opcode = bus_read_byte(cpu->bus, cpu->regs.pc++);
 
@@ -344,6 +353,58 @@ void cpu_step(CPU_6502* cpu) {
     case 0xBC:
         cpu->regs.y = bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE_X));
         update_zn_flags(cpu, cpu->regs.y);
+        break;
+
+    // ADC - Add with carry
+    case 0x69:
+        cpu_adc(cpu, bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, IMMEDIATE)));
+        break;
+    case 0x65:
+        cpu_adc(cpu, bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE)));
+        break;
+    case 0x75:
+        cpu_adc(cpu, bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE_X)));
+        break;
+    case 0x6D:
+        cpu_adc(cpu, bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE)));
+        break;
+    case 0x7D:
+        cpu_adc(cpu, bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE_X)));
+        break;
+    case 0x79:
+        cpu_adc(cpu, bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE_Y)));
+        break;
+    case 0x61:
+        cpu_adc(cpu, bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, INDEXED_INDIRECT)));
+        break;
+    case 0x71:
+        cpu_adc(cpu, bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, INDIRECT_INDEXED)));
+        break;
+
+    // SBC - Subtract with carry
+    case 0xE9:
+        cpu_adc(cpu, ~bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, IMMEDIATE)));
+        break;
+    case 0xE5:
+        cpu_adc(cpu, ~bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE)));
+        break;
+    case 0xF5:
+        cpu_adc(cpu, ~bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ZERO_PAGE_X)));
+        break;
+    case 0xED:
+        cpu_adc(cpu, ~bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE)));
+        break;
+    case 0xFD:
+        cpu_adc(cpu, ~bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE_X)));
+        break;
+    case 0xF9:
+        cpu_adc(cpu, ~bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, ABSOLUTE_Y)));
+        break;
+    case 0xE1:
+        cpu_adc(cpu, ~bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, INDEXED_INDIRECT)));
+        break;
+    case 0xF1:
+        cpu_adc(cpu, ~bus_read_byte(cpu->bus, cpu_get_op_addr(cpu, INDIRECT_INDEXED)));
         break;
 
     // CMP - Compare with accumulator
