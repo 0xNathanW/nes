@@ -29,20 +29,19 @@ void bus_write_byte(Bus* bus, uint16_t addr, uint8_t data) {
     }
 
     else if (addr <= IO_END) {
-        printf("unimplemented: write to IO\n");
+        // APU and I/O — silently ignored for now
     }
 
     else if (addr <= EXPANSION_END) {
-        printf("unimplemented: write to expansion\n");
+        // Expansion ROM — ignored
     }
 
     else if (addr <= SRAM_END) {
-        printf("unimplemented: write to SRAM\n");
+        // SRAM — ignored
     }
 
     else {
-        // PRG-ROM ($8000-$FFFF)
-        printf("unimplemented: write to cartridge\n");
+        // PRG-ROM ($8000-$FFFF) — writes ignored (mapper 0)
     }
 }
 
@@ -58,15 +57,15 @@ uint8_t bus_read_byte(Bus* bus, uint16_t addr) {
     }
 
     else if (addr <= IO_END) {
-        printf("unimplemented: read from IO\n");
+        // APU and I/O — returns 0 for now
     }
 
     else if (addr <= EXPANSION_END) {
-        printf("unimplemented: read from expansion\n");
+        // Expansion ROM — returns 0
     }
 
     else if (addr <= SRAM_END) {
-        printf("unimplemented: read from SRAM\n");
+        // SRAM — returns 0
     }
 
     else {
