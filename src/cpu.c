@@ -259,6 +259,66 @@ void cpu_step(CPU_6502* cpu) {
         update_zn_flags(cpu, cpu->regs.x);
         break;
 
+    // INC - Increment memory
+    case 0xE6: {
+        uint16_t addr = cpu_get_op_addr(cpu, ZERO_PAGE);
+        uint8_t val = bus_read_byte(cpu->bus, addr) + 1;
+        bus_write_byte(cpu->bus, addr, val);
+        update_zn_flags(cpu, val);
+        break;
+    }
+    case 0xF6: {
+        uint16_t addr = cpu_get_op_addr(cpu, ZERO_PAGE_X);
+        uint8_t val = bus_read_byte(cpu->bus, addr) + 1;
+        bus_write_byte(cpu->bus, addr, val);
+        update_zn_flags(cpu, val);
+        break;
+    }
+    case 0xEE: {
+        uint16_t addr = cpu_get_op_addr(cpu, ABSOLUTE);
+        uint8_t val = bus_read_byte(cpu->bus, addr) + 1;
+        bus_write_byte(cpu->bus, addr, val);
+        update_zn_flags(cpu, val);
+        break;
+    }
+    case 0xFE: {
+        uint16_t addr = cpu_get_op_addr(cpu, ABSOLUTE_X);
+        uint8_t val = bus_read_byte(cpu->bus, addr) + 1;
+        bus_write_byte(cpu->bus, addr, val);
+        update_zn_flags(cpu, val);
+        break;
+    }
+
+    // DEC - Decrement memory
+    case 0xC6: {
+        uint16_t addr = cpu_get_op_addr(cpu, ZERO_PAGE);
+        uint8_t val = bus_read_byte(cpu->bus, addr) - 1;
+        bus_write_byte(cpu->bus, addr, val);
+        update_zn_flags(cpu, val);
+        break;
+    }
+    case 0xD6: {
+        uint16_t addr = cpu_get_op_addr(cpu, ZERO_PAGE_X);
+        uint8_t val = bus_read_byte(cpu->bus, addr) - 1;
+        bus_write_byte(cpu->bus, addr, val);
+        update_zn_flags(cpu, val);
+        break;
+    }
+    case 0xCE: {
+        uint16_t addr = cpu_get_op_addr(cpu, ABSOLUTE);
+        uint8_t val = bus_read_byte(cpu->bus, addr) - 1;
+        bus_write_byte(cpu->bus, addr, val);
+        update_zn_flags(cpu, val);
+        break;
+    }
+    case 0xDE: {
+        uint16_t addr = cpu_get_op_addr(cpu, ABSOLUTE_X);
+        uint8_t val = bus_read_byte(cpu->bus, addr) - 1;
+        bus_write_byte(cpu->bus, addr, val);
+        update_zn_flags(cpu, val);
+        break;
+    }
+
     // PHA - Push accumulator
     case 0x48:
         cpu_push_byte(cpu, cpu->regs.acc);
