@@ -28,6 +28,16 @@ void bus_write_byte(Bus* bus, uint16_t addr, uint8_t data) {
         }
     }
 
+    else if (addr == 0x4016) {
+        bool new_strobe = (data & 1) != 0;
+        if (bus->controller_strobe && !new_strobe) {
+            // Falling edge: latch controller state into shift registers
+            bus->controller_shift[0] = bus->controller_state[0];
+            bus->controller_shift[1] = bus->controller_state[1];
+        }
+        bus->controller_strobe = new_strobe;
+    }
+
     else if (addr <= IO_END) {
         // APU and I/O — silently ignored for now
     }
@@ -37,7 +47,7 @@ void bus_write_byte(Bus* bus, uint16_t addr, uint8_t data) {
     }
 
     else if (addr <= SRAM_END) {
-        // SRAM — ignored
+        bus->sram[addr - SRAM_START] = data;
     }
 
     else {
@@ -57,6 +67,18 @@ uint8_t bus_read_byte(Bus* bus, uint16_t addr) {
         data = ppu_read_register(bus->ppu, PPU_MIRROR_TO_BASE(addr));
     }
 
+    else if (addr == 0x4016 || addr == 0x4017) {
+        int port = addr & 1;
+        if (bus->controller_strobe) {
+            // While strobe is high, always return current state of A button
+            data = bus->controller_state[port] & 1;
+        } else {
+            // Shift out one button bit per read
+            data = bus->controller_shift[port] & 1;
+            bus->controller_shift[port] >>= 1;
+        }
+    }
+
     else if (addr <= IO_END) {
         // APU and I/O — returns 0 for now
     }
@@ -66,7 +88,7 @@ uint8_t bus_read_byte(Bus* bus, uint16_t addr) {
     }
 
     else if (addr <= SRAM_END) {
-        // SRAM — returns 0
+        data = bus->sram[addr - SRAM_START];
     }
 
     else {

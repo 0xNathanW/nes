@@ -1,7 +1,18 @@
 #ifndef BUS_H
 #define BUS_H
 
+#include <stdbool.h>
 #include <stdint.h>
+
+// Controller button bits
+#define BUTTON_A      0x01
+#define BUTTON_B      0x02
+#define BUTTON_SELECT 0x04
+#define BUTTON_START  0x08
+#define BUTTON_UP     0x10
+#define BUTTON_DOWN   0x20
+#define BUTTON_LEFT   0x40
+#define BUTTON_RIGHT  0x80
 
 /*
 NES Memory Map:
@@ -73,8 +84,14 @@ struct PPU;
 
 typedef struct Bus {
     uint8_t ram[RAM_SIZE];
+    uint8_t sram[SRAM_SIZE];
     struct Cartridge* cartridge;
     struct PPU* ppu;
+
+    // Controllers
+    uint8_t controller_state[2]; // Current button state (set by frontend)
+    uint8_t controller_shift[2]; // Shift registers (latched on strobe)
+    bool controller_strobe;      // Strobe latch mode
 } Bus;
 
 void bus_init(Bus* bus);
