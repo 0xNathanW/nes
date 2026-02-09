@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "mapper.h"
+
 // https://www.nesdev.org/wiki/INES
 
 /*
@@ -92,6 +94,13 @@ typedef struct Cartridge {
     // 0x6000, but there mapper specific exceptions.
     bool is_battery_backed;
     uint8_t mapper_number;
+
+    // Mapper vtable and per-mapper state
+    Mapper mapper;
+    void* mapper_data;
+
+    // CHR-RAM (used when chr_rom_size == 0)
+    uint8_t chr_ram[0x2000];
 } Cartridge;
 
 Cartridge* load_cart(const char* path);
@@ -101,7 +110,8 @@ void print_cart_info(Cartridge* cart);
 uint8_t cart_read_byte(Cartridge* cart, uint16_t addr);
 void cart_write_byte(Cartridge* cart, uint16_t addr, uint8_t data);
 
-// PPU-side CHR-ROM access ($0000-$1FFF in PPU address space)
+// PPU-side CHR access ($0000-$1FFF in PPU address space)
 uint8_t cart_read_chr(Cartridge* cart, uint16_t addr);
+void cart_write_chr(Cartridge* cart, uint16_t addr, uint8_t data);
 
 #endif

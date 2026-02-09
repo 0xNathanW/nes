@@ -41,7 +41,8 @@ void bus_write_byte(Bus* bus, uint16_t addr, uint8_t data) {
     }
 
     else {
-        // PRG-ROM ($8000-$FFFF) — writes ignored (mapper 0)
+        // PRG-ROM ($8000-$FFFF) — forward to mapper
+        cart_write_byte(bus->cartridge, addr, data);
     }
 }
 

@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-bool is_header_valid(struct CartHeader* header) {
+static bool is_header_valid(struct CartHeader* header) {
     char expected_signature[4] = {0x4E, 0x45, 0x53, 0x1A};
     if (memcmp(expected_signature, header->signature, 4)) {
         printf("error: not a valid iNES ROM (bad signature)\n");
@@ -15,7 +15,7 @@ bool is_header_valid(struct CartHeader* header) {
     }
 
     // Don't support ines 2.0 atm.
-    if ((header->flags8 != 0) & (header->flags9 != 0) &
+    if ((header->flags8 != 0) && (header->flags9 != 0) &&
         (header->flags10 != 0)) {
         printf("error: this cart is not supported\n");
         return false;
@@ -117,6 +117,18 @@ Cartridge* load_cart(const char* path) {
     }
 
     fclose(file);
+
+    // Initialize mapper
+    switch (cart->mapper_number) {
+    case 0:
+        mapper0_init(cart);
+        break;
+    default:
+        printf("error: unsupported mapper %d\n", cart->mapper_number);
+        free_cart(cart);
+        return NULL;
+    }
+
     return cart;
 }
 
@@ -132,6 +144,9 @@ void free_cart(Cartridge* cart) {
     }
     if (cart->chr_rom) {
         free(cart->chr_rom);
+    }
+    if (cart->mapper_data) {
+        free(cart->mapper_data);
     }
     free(cart);
 }
@@ -153,30 +168,17 @@ void print_cart_info(Cartridge* cart) {
 }
 
 uint8_t cart_read_byte(Cartridge* cart, uint16_t addr) {
-    // Mapper 0 (NROM): PRG-ROM at $8000-$FFFF
-    if (addr >= 0x8000) {
-        uint16_t offset = addr - 0x8000;
-        // Mirror 16KB ROMs to fill 32KB address space
-        if (cart->prg_rom_size == 1) {
-            // Mirror: $C000-$FFFF maps to $8000-$BFFF
-            offset &= 0x3FFF;
-        }
-        return cart->prg_rom[offset];
-    }
-    return 0;
+    return cart->mapper.read_prg(cart, addr);
 }
 
 void cart_write_byte(Cartridge* cart, uint16_t addr, uint8_t data) {
-    // Mapper 0: ROM is read only, writes are ignored.
-    (void)cart;
-    (void)addr;
-    (void)data;
+    cart->mapper.write_prg(cart, addr, data);
 }
 
 uint8_t cart_read_chr(Cartridge* cart, uint16_t addr) {
-    // Mapper 0: CHR-ROM mapped directly at $0000-$1FFF
-    if (addr < 0x2000 && cart->chr_rom) {
-        return cart->chr_rom[addr];
-    }
-    return 0;
+    return cart->mapper.read_chr(cart, addr);
+}
+
+void cart_write_chr(Cartridge* cart, uint16_t addr, uint8_t data) {
+    cart->mapper.write_chr(cart, addr, data);
 }
