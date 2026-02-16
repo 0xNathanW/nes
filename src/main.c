@@ -47,8 +47,8 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    SDL_Renderer* renderer = SDL_CreateRenderer(
-        window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    SDL_Renderer* renderer =
+        SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
         printf("error: renderer creation failed: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);
@@ -91,6 +91,11 @@ int main(int argc, char* argv[]) {
 
     uint32_t pixels[NES_WIDTH * NES_HEIGHT];
     bool running = true;
+
+    const double NES_FPS = 60.0988;
+    const double frame_target_s = 1.0 / NES_FPS;
+    uint64_t perf_freq = SDL_GetPerformanceFrequency();
+    uint64_t frame_start = SDL_GetPerformanceCounter();
 
     while (running) {
         SDL_Event event;
@@ -141,6 +146,20 @@ int main(int argc, char* argv[]) {
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, texture, NULL, NULL);
         SDL_RenderPresent(renderer);
+
+        // Wait until frame deadline
+        uint64_t now = SDL_GetPerformanceCounter();
+        double elapsed = (double)(now - frame_start) / (double)perf_freq;
+        double remaining = frame_target_s - elapsed;
+        if (remaining > 0.0015) {
+            SDL_Delay((uint32_t)((remaining - 0.001) * 1000.0));
+        }
+        while ((double)(SDL_GetPerformanceCounter() - frame_start) /
+                   (double)perf_freq <
+               frame_target_s) {
+            // busy-wait for sub-ms precision
+        }
+        frame_start = SDL_GetPerformanceCounter();
     }
 
     nes_destroy(nes);
