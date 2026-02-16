@@ -280,7 +280,7 @@ static void ppu_render_scanline(PPU* ppu) {
         int indices[8];
 
         for (int i = 0; i < 64; i++) {
-            int diff = sl - (int)ppu->oam[i * 4];
+            int diff = sl - ((int)ppu->oam[i * 4] + 1);
             if (diff >= 0 && diff < height) {
                 if (found < 8) {
                     indices[found++] = i;
@@ -303,7 +303,7 @@ static void ppu_render_scanline(PPU* ppu) {
             bool flip_v = (attr & 0x80) != 0;
             uint8_t pal = attr & 0x03;
 
-            int row = sl - spy;
+            int row = sl - spy - 1;
             if (flip_v)
                 row = (height - 1) - row;
 
