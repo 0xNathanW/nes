@@ -107,28 +107,19 @@ int main(int argc, char* argv[]) {
                 event.key.keysym.sym == SDLK_ESCAPE) {
                 running = false;
             }
-            if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
-                bool pressed = (event.type == SDL_KEYDOWN);
-                uint8_t btn = 0;
-                switch (event.key.keysym.sym) {
-                case SDLK_z:      btn = BUTTON_A;      break; // A
-                case SDLK_x:      btn = BUTTON_B;      break; // B
-                case SDLK_RSHIFT: btn = BUTTON_SELECT;  break; // Select
-                case SDLK_RETURN: btn = BUTTON_START;   break; // Start
-                case SDLK_UP:     btn = BUTTON_UP;      break;
-                case SDLK_DOWN:   btn = BUTTON_DOWN;    break;
-                case SDLK_LEFT:   btn = BUTTON_LEFT;    break;
-                case SDLK_RIGHT:  btn = BUTTON_RIGHT;   break;
-                default: break;
-                }
-                if (btn) {
-                    if (pressed)
-                        nes->bus.controller_state[0] |= btn;
-                    else
-                        nes->bus.controller_state[0] &= ~btn;
-                }
-            }
         }
+
+        const uint8_t* keys = SDL_GetKeyboardState(NULL);
+        uint8_t pad = 0;
+        if (keys[SDL_SCANCODE_Z])      pad |= BUTTON_A;
+        if (keys[SDL_SCANCODE_X])      pad |= BUTTON_B;
+        if (keys[SDL_SCANCODE_RSHIFT]) pad |= BUTTON_SELECT;
+        if (keys[SDL_SCANCODE_RETURN]) pad |= BUTTON_START;
+        if (keys[SDL_SCANCODE_UP])     pad |= BUTTON_UP;
+        if (keys[SDL_SCANCODE_DOWN])   pad |= BUTTON_DOWN;
+        if (keys[SDL_SCANCODE_LEFT])   pad |= BUTTON_LEFT;
+        if (keys[SDL_SCANCODE_RIGHT])  pad |= BUTTON_RIGHT;
+        nes->bus.controller_state[0] = pad;
 
         // Run one frame
         nes->ppu.frame_complete = false;
