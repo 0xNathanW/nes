@@ -233,7 +233,13 @@ int cpu_step(CPU_6502* cpu) {
         break;
 
     // NOP
+    case 0x1A:
+    case 0x3A:
+    case 0x5A:
+    case 0x7A:
+    case 0xDA:
     case 0xEA:
+    case 0xFA:
         break;
 
     // BIT - Bit test
