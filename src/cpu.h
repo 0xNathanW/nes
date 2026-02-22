@@ -129,6 +129,7 @@ typedef struct CPU_6502 {
     Registers regs;
     Bus* bus;
     bool nmi_pending;
+    bool irq_pending;
 } CPU_6502;
 
 void cpu_power_on(CPU_6502* cpu);

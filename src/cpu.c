@@ -180,6 +180,15 @@ int cpu_step(CPU_6502* cpu) {
         return 7;
     }
 
+    if (cpu->irq_pending && !(cpu->regs.p & FLAG_INTERRUPT)) {
+        cpu_push_word(cpu, cpu->regs.pc);
+        cpu_push_byte(cpu, (cpu->regs.p & ~FLAG_BREAK) | 0x20);
+        cpu_set_flag(cpu, FLAG_INTERRUPT, true);
+        cpu->regs.pc = bus_read_word(cpu->bus, 0xFFFE);
+        cpu->irq_pending = false;
+        return 7;
+    }
+
     uint8_t opcode = bus_read_byte(cpu->bus, cpu->regs.pc++);
 
     switch (opcode) {
