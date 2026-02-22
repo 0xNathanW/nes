@@ -15,10 +15,12 @@ typedef struct Mapper {
     void    (*write_prg)(struct Cartridge*, uint16_t addr, uint8_t data);
     uint8_t (*read_chr)(struct Cartridge*, uint16_t addr);
     void    (*write_chr)(struct Cartridge*, uint16_t addr, uint8_t data);
+    void    (*scanline_counter)(struct Cartridge*);
 } Mapper;
 
 void mapper0_init(struct Cartridge*);
 void mapper1_init(struct Cartridge*);
 void mapper2_init(struct Cartridge*);
+void mapper4_init(struct Cartridge*);
 
 #endif

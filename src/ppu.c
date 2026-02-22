@@ -388,6 +388,11 @@ void ppu_step(PPU* ppu) {
         if (ppu->dot == 257) {
             ppu_copy_horizontal_bits(ppu);
         }
+        if (ppu->dot == 260) {
+            if (ppu->cart->mapper.scanline_counter) {
+                ppu->cart->mapper.scanline_counter(ppu->cart);
+            }
+        }
     }
 
     // Pre-render scanline (261)

@@ -1,7 +1,6 @@
 #include "nes.h"
 #include "bus.h"
 #include "cpu.h"
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -64,6 +63,10 @@ void nes_step(NES* nes) {
     }
 
     if (nes->apu.irq_pending) {
+        nes->cpu.irq_pending = true;
+    }
+
+    if (nes->cartridge && nes->cartridge->irq_pending) {
         nes->cpu.irq_pending = true;
     }
 }

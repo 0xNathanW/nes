@@ -45,6 +45,7 @@ static void init_mixing_tables(void) {
 void apu_init(APU* apu) {
     memset(apu, 0, sizeof(APU));
     apu->noise.shift_register = 1;
+    apu->frame_irq_inhibit = true;
     apu->cycles_per_sample = 1789773.0 / APU_SAMPLE_RATE;
     init_mixing_tables();
 }

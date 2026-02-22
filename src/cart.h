@@ -98,6 +98,7 @@ typedef struct Cartridge {
     // Mapper vtable and per-mapper state
     Mapper mapper;
     void* mapper_data;
+    bool irq_pending;
 
     // CHR-RAM (used when chr_rom_size == 0)
     uint8_t chr_ram[0x2000];
