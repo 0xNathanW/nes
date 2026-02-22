@@ -2,7 +2,6 @@
 #include "apu.h"
 #include "cart.h"
 #include "ppu.h"
-#include <stdio.h>
 #include <string.h>
 
 void bus_init(Bus* bus) { memset(bus, 0, sizeof(Bus)); }
