@@ -111,6 +111,7 @@ int main(int argc, char* argv[]) {
 
     uint32_t pixels[NES_WIDTH * NES_HEIGHT];
     bool running = true;
+    bool muted = false;
 
     const double NES_FPS = 60.0988;
     const double frame_target_s = 1.0 / NES_FPS;
@@ -123,9 +124,14 @@ int main(int argc, char* argv[]) {
             if (event.type == SDL_QUIT) {
                 running = false;
             }
-            if (event.type == SDL_KEYDOWN &&
-                event.key.keysym.sym == SDLK_ESCAPE) {
-                running = false;
+            if (event.type == SDL_KEYDOWN) {
+                if (event.key.keysym.sym == SDLK_ESCAPE) {
+                    running = false;
+                }
+                if (event.key.keysym.sym == SDLK_m && audio_dev) {
+                    muted = !muted;
+                    SDL_PauseAudioDevice(audio_dev, muted);
+                }
             }
         }
 
