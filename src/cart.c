@@ -123,6 +123,9 @@ Cartridge* load_cart(const char* path) {
     case 0:
         mapper0_init(cart);
         break;
+    case 1:
+        mapper1_init(cart);
+        break;
     default:
         printf("error: unsupported mapper %d\n", cart->mapper_number);
         free_cart(cart);

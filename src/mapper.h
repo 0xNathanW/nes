@@ -18,5 +18,6 @@ typedef struct Mapper {
 } Mapper;
 
 void mapper0_init(struct Cartridge*);
+void mapper1_init(struct Cartridge*);
 
 #endif
