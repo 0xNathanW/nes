@@ -1,4 +1,5 @@
 #include "bus.h"
+#include "apu.h"
 #include "cart.h"
 #include "ppu.h"
 #include <stdio.h>
@@ -39,7 +40,7 @@ void bus_write_byte(Bus* bus, uint16_t addr, uint8_t data) {
     }
 
     else if (addr <= IO_END) {
-        // APU and I/O — silently ignored for now
+        apu_write_register(bus->apu, addr, data);
     }
 
     else if (addr <= EXPANSION_END) {
@@ -65,6 +66,10 @@ uint8_t bus_read_byte(Bus* bus, uint16_t addr) {
 
     else if (addr <= PPU_MIRROR_END) {
         data = ppu_read_register(bus->ppu, PPU_MIRROR_TO_BASE(addr));
+    }
+
+    else if (addr == 0x4015) {
+        data = apu_read_register(bus->apu, addr);
     }
 
     else if (addr == 0x4016 || addr == 0x4017) {

@@ -14,8 +14,10 @@ NES* nes_create() {
 
     bus_init(&nes->bus);
     ppu_init(&nes->ppu);
+    apu_init(&nes->apu);
     nes->cpu.bus = &nes->bus;
     nes->bus.ppu = &nes->ppu;
+    nes->bus.apu = &nes->apu;
 
     return nes;
 }
@@ -51,9 +53,17 @@ void nes_step(NES* nes) {
         ppu_step(&nes->ppu);
     }
 
+    for (int i = 0; i < cpu_cycles; i++) {
+        apu_step(&nes->apu);
+    }
+
     // Check if PPU wants to trigger an NMI
     if (ppu_nmi_pending(&nes->ppu)) {
         nes->cpu.nmi_pending = true;
         ppu_clear_nmi(&nes->ppu);
+    }
+
+    if (nes->apu.irq_pending) {
+        nes->cpu.irq_pending = true;
     }
 }

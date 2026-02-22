@@ -81,12 +81,14 @@ _____________	0x0000
 
 struct Cartridge;
 struct PPU;
+struct APU;
 
 typedef struct Bus {
     uint8_t ram[RAM_SIZE];
     uint8_t sram[SRAM_SIZE];
     struct Cartridge* cartridge;
     struct PPU* ppu;
+    struct APU* apu;
 
     // Controllers
     uint8_t controller_state[2]; // Current button state (set by frontend)

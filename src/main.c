@@ -1,3 +1,4 @@
+#include "apu.h"
 #include "nes.h"
 #include <SDL.h>
 #include <stdio.h>
@@ -33,7 +34,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         printf("error: SDL initialisation failed: %s\n", SDL_GetError());
         return 1;
     }
@@ -88,6 +89,25 @@ int main(int argc, char* argv[]) {
     }
 
     print_cart_info(nes->cartridge);
+
+    // Open SDL audio device
+    SDL_AudioDeviceID audio_dev = 0;
+    {
+        SDL_AudioSpec want;
+        SDL_zero(want);
+        want.freq = APU_SAMPLE_RATE;
+        want.format = AUDIO_F32SYS;
+        want.channels = 1;
+        want.samples = 1024;
+        want.callback = apu_audio_callback;
+        want.userdata = &nes->apu;
+        audio_dev = SDL_OpenAudioDevice(NULL, 0, &want, NULL, 0);
+        if (audio_dev == 0) {
+            printf("warning: could not open audio: %s\n", SDL_GetError());
+        } else {
+            SDL_PauseAudioDevice(audio_dev, 0);
+        }
+    }
 
     uint32_t pixels[NES_WIDTH * NES_HEIGHT];
     bool running = true;
@@ -153,6 +173,8 @@ int main(int argc, char* argv[]) {
         frame_start = SDL_GetPerformanceCounter();
     }
 
+    if (audio_dev)
+        SDL_CloseAudioDevice(audio_dev);
     nes_destroy(nes);
     SDL_DestroyTexture(texture);
     SDL_DestroyRenderer(renderer);
