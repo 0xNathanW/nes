@@ -1,11 +1,65 @@
 #include "apu.h"
 #include "nes.h"
 #include <SDL.h>
+#include <getopt.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-#define WINDOW_SCALE 3
-#define WINDOW_WIDTH (NES_WIDTH * WINDOW_SCALE)
-#define WINDOW_HEIGHT (NES_HEIGHT * WINDOW_SCALE)
+#define DEFAULT_SCALE 3
+
+typedef struct {
+    const char* rom_path;
+    int scale;
+} Options;
+
+static void print_usage(const char* prog) {
+    printf("usage: %s [options] <rom.nes>\n\n", prog);
+    printf("options:\n");
+    printf("  -s, --scale <n>   Window scale factor (default: %d)\n",
+           DEFAULT_SCALE);
+    printf("  -h, --help        Show this help message\n");
+}
+
+static bool parse_options(int argc, char* argv[], Options* opts) {
+    opts->rom_path = NULL;
+    opts->scale = DEFAULT_SCALE;
+
+    // clang-format off
+    static struct option long_options[] = {
+        {"scale", required_argument, NULL, 's'},
+        {"help",  no_argument,       NULL, 'h'},
+        {NULL,    0,                 NULL,  0 },
+    };
+    // clang-format on
+
+    int opt;
+    while ((opt = getopt_long(argc, argv, "s:h", long_options, NULL)) != -1) {
+        switch (opt) {
+        case 's':
+            opts->scale = atoi(optarg);
+            if (opts->scale < 1 || opts->scale > 8) {
+                fprintf(stderr, "error: scale must be between 1 and 8\n");
+                return false;
+            }
+            break;
+        case 'h':
+            print_usage(argv[0]);
+            exit(0);
+        default:
+            print_usage(argv[0]);
+            return false;
+        }
+    }
+
+    if (optind >= argc) {
+        fprintf(stderr, "error: no ROM file specified\n\n");
+        print_usage(argv[0]);
+        return false;
+    }
+
+    opts->rom_path = argv[optind];
+    return true;
+}
 
 // clang-format off
 static const uint32_t NES_PALETTE[64] = {
@@ -29,10 +83,13 @@ static const uint32_t NES_PALETTE[64] = {
 // clang-format on
 
 int main(int argc, char* argv[]) {
-    if (argc < 2) {
-        printf("usage: nes <rom.nes>\n");
+    Options opts;
+    if (!parse_options(argc, argv, &opts)) {
         return 1;
     }
+
+    int window_width = NES_WIDTH * opts.scale;
+    int window_height = NES_HEIGHT * opts.scale;
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         printf("error: SDL initialisation failed: %s\n", SDL_GetError());
@@ -41,7 +98,7 @@ int main(int argc, char* argv[]) {
 
     SDL_Window* window =
         SDL_CreateWindow("NES", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                         WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+                         window_width, window_height, 0);
     if (!window) {
         printf("error: SDL window creation failed: %s\n", SDL_GetError());
         SDL_Quit();
@@ -78,8 +135,8 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    if (!nes_load_cartridge(nes, argv[1])) {
-        printf("error: could not load cartridge: %s\n", argv[1]);
+    if (!nes_load_cartridge(nes, opts.rom_path)) {
+        printf("error: could not load cartridge: %s\n", opts.rom_path);
         nes_destroy(nes);
         SDL_DestroyTexture(texture);
         SDL_DestroyRenderer(renderer);
