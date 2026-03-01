@@ -1,6 +1,7 @@
 #include "bus.h"
 #include "apu.h"
 #include "cart.h"
+#include "log.h"
 #include "ppu.h"
 #include <string.h>
 
@@ -43,7 +44,7 @@ void bus_write_byte(Bus* bus, uint16_t addr, uint8_t data) {
     }
 
     else if (addr <= EXPANSION_END) {
-        // Expansion ROM — ignored
+        LOG_WARN("write to expansion ROM space ($%04X = $%02X)", addr, data);
     }
 
     else if (addr <= SRAM_END) {
@@ -84,11 +85,11 @@ uint8_t bus_read_byte(Bus* bus, uint16_t addr) {
     }
 
     else if (addr <= IO_END) {
-        // APU and I/O — returns 0 for now
+        LOG_WARN("read from unmapped I/O register $%04X", addr);
     }
 
     else if (addr <= EXPANSION_END) {
-        // Expansion ROM — returns 0
+        LOG_WARN("read from expansion ROM space $%04X", addr);
     }
 
     else if (addr <= SRAM_END) {
