@@ -13,6 +13,7 @@ typedef struct {
     const char* rom_path;
     int scale;
     bool overscan;
+    double speed;
 } Options;
 
 static void print_usage(const char* prog) {
@@ -21,6 +22,7 @@ static void print_usage(const char* prog) {
     printf("  -s, --scale <n>   Window scale factor (default: %d)\n",
            DEFAULT_SCALE);
     printf("  -o, --overscan    Crop %d pixels from each edge\n", OVERSCAN);
+    printf("  -c, --speed <x>   Clock speed multiplier (default: 1.0)\n");
     printf("  -h, --help        Show this help message\n");
 }
 
@@ -28,18 +30,20 @@ static bool parse_options(int argc, char* argv[], Options* opts) {
     opts->rom_path = NULL;
     opts->scale = DEFAULT_SCALE;
     opts->overscan = false;
+    opts->speed = 1.0;
 
     // clang-format off
     static struct option long_options[] = {
         {"scale",    required_argument, NULL, 's'},
         {"overscan", no_argument,       NULL, 'o'},
+        {"speed",    required_argument, NULL, 'c'},
         {"help",     no_argument,       NULL, 'h'},
         {NULL,       0,                 NULL,  0 },
     };
     // clang-format on
 
     int opt;
-    while ((opt = getopt_long(argc, argv, "s:oh", long_options, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "s:oc:h", long_options, NULL)) != -1) {
         switch (opt) {
         case 's':
             opts->scale = atoi(optarg);
@@ -50,6 +54,13 @@ static bool parse_options(int argc, char* argv[], Options* opts) {
             break;
         case 'o':
             opts->overscan = true;
+            break;
+        case 'c':
+            opts->speed = atof(optarg);
+            if (opts->speed <= 0.0) {
+                fprintf(stderr, "error: speed must be greater than 0\n");
+                return false;
+            }
             break;
         case 'h':
             print_usage(argv[0]);
@@ -182,7 +193,7 @@ int main(int argc, char* argv[]) {
     bool muted = false;
 
     const double NES_FPS = 60.0988;
-    const double frame_target_s = 1.0 / NES_FPS;
+    const double frame_target_s = 1.0 / (NES_FPS * opts.speed);
     uint64_t perf_freq = SDL_GetPerformanceFrequency();
     uint64_t frame_start = SDL_GetPerformanceCounter();
 
