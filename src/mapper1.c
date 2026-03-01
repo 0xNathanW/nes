@@ -1,4 +1,5 @@
 #include "cart.h"
+#include "log.h"
 #include <stdlib.h>
 
 typedef struct {
@@ -151,6 +152,10 @@ static void mapper1_write_chr(Cartridge* cart, uint16_t addr, uint8_t data) {
 
 void mapper1_init(Cartridge* cart) {
     MMC1State* state = malloc(sizeof(MMC1State));
+    if (!state) {
+        LOG_ERROR("unable to allocate memory for mapper 1 (MMC1) state");
+        return;
+    }
     state->shift_register = 0;
     state->shift_count = 0;
     state->reg_control = 0x0C;

@@ -1,4 +1,5 @@
 #include "cart.h"
+#include "log.h"
 #include <stdlib.h>
 
 typedef struct {
@@ -156,6 +157,10 @@ static void mapper4_scanline_counter(Cartridge* cart) {
 
 void mapper4_init(Cartridge* cart) {
     MMC3State* state = malloc(sizeof(MMC3State));
+    if (!state) {
+        LOG_ERROR("unable to allocate memory for mapper 4 (MMC3) state");
+        return;
+    }
     state->bank_select = 0;
     for (int i = 0; i < 8; i++)
         state->bank_regs[i] = 0;

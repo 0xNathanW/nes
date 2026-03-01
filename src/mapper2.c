@@ -1,4 +1,5 @@
 #include "cart.h"
+#include "log.h"
 #include <stdlib.h>
 
 typedef struct {
@@ -46,6 +47,10 @@ static void mapper2_write_chr(Cartridge* cart, uint16_t addr, uint8_t data) {
 
 void mapper2_init(Cartridge* cart) {
     UxROMState* state = malloc(sizeof(UxROMState));
+    if (!state) {
+        LOG_ERROR("unable to allocate memory for mapper 2 (UxROM) state");
+        return;
+    }
     state->prg_bank = 0;
 
     cart->mapper_data = state;
