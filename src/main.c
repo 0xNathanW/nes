@@ -7,9 +7,12 @@
 
 #define DEFAULT_SCALE 3
 
+#define OVERSCAN 8 // Pixels cropped from each edge
+
 typedef struct {
     const char* rom_path;
     int scale;
+    bool overscan;
 } Options;
 
 static void print_usage(const char* prog) {
@@ -17,23 +20,26 @@ static void print_usage(const char* prog) {
     printf("options:\n");
     printf("  -s, --scale <n>   Window scale factor (default: %d)\n",
            DEFAULT_SCALE);
+    printf("  -o, --overscan    Crop %d pixels from each edge\n", OVERSCAN);
     printf("  -h, --help        Show this help message\n");
 }
 
 static bool parse_options(int argc, char* argv[], Options* opts) {
     opts->rom_path = NULL;
     opts->scale = DEFAULT_SCALE;
+    opts->overscan = false;
 
     // clang-format off
     static struct option long_options[] = {
-        {"scale", required_argument, NULL, 's'},
-        {"help",  no_argument,       NULL, 'h'},
-        {NULL,    0,                 NULL,  0 },
+        {"scale",    required_argument, NULL, 's'},
+        {"overscan", no_argument,       NULL, 'o'},
+        {"help",     no_argument,       NULL, 'h'},
+        {NULL,       0,                 NULL,  0 },
     };
     // clang-format on
 
     int opt;
-    while ((opt = getopt_long(argc, argv, "s:h", long_options, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "s:oh", long_options, NULL)) != -1) {
         switch (opt) {
         case 's':
             opts->scale = atoi(optarg);
@@ -41,6 +47,9 @@ static bool parse_options(int argc, char* argv[], Options* opts) {
                 fprintf(stderr, "error: scale must be between 1 and 8\n");
                 return false;
             }
+            break;
+        case 'o':
+            opts->overscan = true;
             break;
         case 'h':
             print_usage(argv[0]);
@@ -88,8 +97,10 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    int window_width = NES_WIDTH * opts.scale;
-    int window_height = NES_HEIGHT * opts.scale;
+    int view_w = opts.overscan ? NES_WIDTH - 2 * OVERSCAN : NES_WIDTH;
+    int view_h = opts.overscan ? NES_HEIGHT - 2 * OVERSCAN : NES_HEIGHT;
+    int window_width = view_w * opts.scale;
+    int window_height = view_h * opts.scale;
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         printf("error: SDL initialisation failed: %s\n", SDL_GetError());
@@ -218,7 +229,12 @@ int main(int argc, char* argv[]) {
 
         SDL_UpdateTexture(texture, NULL, pixels, NES_WIDTH * sizeof(uint32_t));
         SDL_RenderClear(renderer);
-        SDL_RenderCopy(renderer, texture, NULL, NULL);
+        if (opts.overscan) {
+            SDL_Rect src = {OVERSCAN, OVERSCAN, view_w, view_h};
+            SDL_RenderCopy(renderer, texture, &src, NULL);
+        } else {
+            SDL_RenderCopy(renderer, texture, NULL, NULL);
+        }
         SDL_RenderPresent(renderer);
 
         // Wait until frame deadline
