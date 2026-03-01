@@ -1,5 +1,6 @@
 #include "cart.h"
 #include "cpu.h"
+#include "log.h"
 #include "nes.h"
 
 #define NESTEST_INSTRUCTION_LIMIT 8991
@@ -75,12 +76,12 @@ int main(int argc, char* argv[]) {
 
     NES* nes = nes_create();
     if (!nes) {
-        printf("error: could not create NES\n");
+        LOG_ERROR("could not create NES");
         return 1;
     }
 
     if (!nes_load_cartridge(nes, rom_path)) {
-        printf("error: could not load cartridge: %s\n", rom_path);
+        LOG_ERROR("could not load cartridge: %s", rom_path);
         nes_destroy(nes);
         return 1;
     }
@@ -89,7 +90,7 @@ int main(int argc, char* argv[]) {
 
     FILE* log = fopen(LOG_PATH, "r");
     if (!log) {
-        printf("error: could not open log: %s\n", LOG_PATH);
+        LOG_ERROR("could not open log: %s", LOG_PATH);
         nes_destroy(nes);
         return 1;
     }
@@ -103,14 +104,14 @@ int main(int argc, char* argv[]) {
 
     for (int i = 0; i < NESTEST_INSTRUCTION_LIMIT; i++) {
         if (!fgets(line, sizeof(line), log)) {
-            printf("log ended early at instruction %d\n", i + 1);
+            LOG_WARN("log ended early at instruction %d", i + 1);
             break;
         }
         line_num++;
 
         ExpectedState expected;
         if (!parse_log_line(line, &expected)) {
-            printf("error: could not parse log line %d: %s", line_num, line);
+            LOG_ERROR("could not parse log line %d: %s", line_num, line);
             break;
         }
 

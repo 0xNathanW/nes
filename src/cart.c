@@ -1,4 +1,6 @@
 #include "cart.h"
+#include "log.h"
+#include <errno.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,18 +8,18 @@
 static bool is_header_valid(struct CartHeader* header) {
     char expected_signature[4] = {0x4E, 0x45, 0x53, 0x1A};
     if (memcmp(expected_signature, header->signature, 4)) {
-        printf("error: not a valid iNES ROM (bad signature)\n");
+        LOG_ERROR("not a valid iNES ROM (bad signature)");
         return false;
     }
 
     if ((header->flags7 & 0x0C) == 0x08) {
-        printf("info: iNES 2.0 detected, parsing as iNES 1.0\n");
+        LOG_INFO("iNES 2.0 detected, parsing as iNES 1.0");
     }
 
     // Don't support ines 2.0 atm.
     if ((header->flags8 != 0) && (header->flags9 != 0) &&
         (header->flags10 != 0)) {
-        printf("error: this cart is not supported\n");
+        LOG_ERROR("this cart is not supported");
         return false;
     }
 
@@ -28,13 +30,13 @@ Cartridge* load_cart(const char* path) {
 
     FILE* file = fopen(path, "rb");
     if (!file) {
-        perror("error: could not open cartridge");
+        LOG_ERROR("could not open cartridge: %s", strerror(errno));
         return NULL;
     }
 
     Cartridge* cart = malloc(sizeof(Cartridge));
     if (!cart) {
-        printf("error: unable to allocate memory for cart\n");
+        LOG_ERROR("unable to allocate memory for cart");
         fclose(file);
         return NULL;
     }
@@ -43,7 +45,7 @@ Cartridge* load_cart(const char* path) {
     memset(cart, 0, sizeof(Cartridge));
 
     if (fread(&cart->header, sizeof(struct CartHeader), 1, file) != 1) {
-        printf("error: could not read cart header\n");
+        LOG_ERROR("could not read cart header");
         free_cart(cart);
         fclose(file);
         return NULL;
@@ -67,13 +69,13 @@ Cartridge* load_cart(const char* path) {
     if (cart->has_trainer) {
         cart->trainer = malloc(512);
         if (!cart->trainer) {
-            printf("error: unable to allocate memory for trainer\n");
+            LOG_ERROR("unable to allocate memory for trainer");
             free_cart(cart);
             fclose(file);
             return NULL;
         }
         if (fread(cart->trainer, 512, 1, file) != 1) {
-            printf("error: unable to read trainer data\n");
+            LOG_ERROR("unable to read trainer data");
             free_cart(cart);
             fclose(file);
             return NULL;
@@ -85,13 +87,13 @@ Cartridge* load_cart(const char* path) {
         size_t prg_bytes = cart->prg_rom_size * PRG_BLOCK;
         cart->prg_rom = malloc(prg_bytes);
         if (!cart->prg_rom) {
-            printf("error: unable to allocate memory for program code\n");
+            LOG_ERROR("unable to allocate memory for program code");
             free_cart(cart);
             fclose(file);
             return NULL;
         }
         if (fread(cart->prg_rom, prg_bytes, 1, file) != 1) {
-            printf("error: unable to read program code\n");
+            LOG_ERROR("unable to read program code");
             free_cart(cart);
             fclose(file);
             return NULL;
@@ -103,13 +105,13 @@ Cartridge* load_cart(const char* path) {
         size_t chr_bytes = cart->chr_rom_size * CHR_BLOCK;
         cart->chr_rom = malloc(chr_bytes);
         if (!cart->chr_rom) {
-            printf("error: unable to allocate memory for graphics data\n");
+            LOG_ERROR("unable to allocate memory for graphics data");
             free_cart(cart);
             fclose(file);
             return NULL;
         }
         if (fread(cart->chr_rom, chr_bytes, 1, file) != 1) {
-            printf("error: unable to read graphics data\n");
+            LOG_ERROR("unable to read graphics data");
             free_cart(cart);
             fclose(file);
             return NULL;
@@ -133,7 +135,7 @@ Cartridge* load_cart(const char* path) {
         mapper4_init(cart);
         break;
     default:
-        printf("error: unsupported mapper %d\n", cart->mapper_number);
+        LOG_ERROR("unsupported mapper %d", cart->mapper_number);
         free_cart(cart);
         return NULL;
     }
@@ -161,19 +163,17 @@ void free_cart(Cartridge* cart) {
 }
 
 void print_cart_info(Cartridge* cart) {
-    printf("\nCart Info:\n");
-    printf("PRG ROM size: %d KB\n", cart->prg_rom_size * 16);
-    printf("CHR ROM size: %d KB\n", cart->chr_rom_size * 8);
-    printf("Mapper number: %d\n", cart->mapper_number);
-    printf("Mirroring: %s\n",
-           cart->nametable_arrangement ? "vertical" : "horizontal");
+    LOG_INFO("PRG ROM size: %d KB", cart->prg_rom_size * 16);
+    LOG_INFO("CHR ROM size: %d KB", cart->chr_rom_size * 8);
+    LOG_INFO("mapper number: %d", cart->mapper_number);
+    LOG_INFO("mirroring: %s",
+             cart->nametable_arrangement ? "vertical" : "horizontal");
     if (cart->is_battery_backed) {
-        printf("Battery backed memory present\n");
+        LOG_INFO("battery backed memory present");
     }
     if (cart->has_trainer) {
-        printf("512 byte trainer present\n");
+        LOG_INFO("512 byte trainer present");
     }
-    printf("\n");
 }
 
 uint8_t cart_read_byte(Cartridge* cart, uint16_t addr) {

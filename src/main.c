@@ -1,4 +1,5 @@
 #include "apu.h"
+#include "log.h"
 #include "nes.h"
 #include <SDL.h>
 #include <getopt.h>
@@ -17,13 +18,13 @@ typedef struct {
 } Options;
 
 static void print_usage(const char* prog) {
-    printf("usage: %s [options] <rom.nes>\n\n", prog);
-    printf("options:\n");
-    printf("  -s, --scale <n>   Window scale factor (default: %d)\n",
-           DEFAULT_SCALE);
-    printf("  -o, --overscan    Crop %d pixels from each edge\n", OVERSCAN);
-    printf("  -c, --speed <x>   Clock speed multiplier (default: 1.0)\n");
-    printf("  -h, --help        Show this help message\n");
+    fprintf(stderr, "usage: %s [options] <rom.nes>\n\n", prog);
+    fprintf(stderr, "options:\n");
+    fprintf(stderr, "  -s, --scale <n>   Window scale factor (default: %d)\n",
+            DEFAULT_SCALE);
+    fprintf(stderr, "  -o, --overscan    Crop %d pixels from each edge\n", OVERSCAN);
+    fprintf(stderr, "  -c, --speed <x>   Clock speed multiplier (default: 1.0)\n");
+    fprintf(stderr, "  -h, --help        Show this help message\n");
 }
 
 static bool parse_options(int argc, char* argv[], Options* opts) {
@@ -48,7 +49,7 @@ static bool parse_options(int argc, char* argv[], Options* opts) {
         case 's':
             opts->scale = atoi(optarg);
             if (opts->scale < 1 || opts->scale > 8) {
-                fprintf(stderr, "error: scale must be between 1 and 8\n");
+                LOG_ERROR("scale must be between 1 and 8");
                 return false;
             }
             break;
@@ -58,7 +59,7 @@ static bool parse_options(int argc, char* argv[], Options* opts) {
         case 'c':
             opts->speed = atof(optarg);
             if (opts->speed <= 0.0) {
-                fprintf(stderr, "error: speed must be greater than 0\n");
+                LOG_ERROR("speed must be greater than 0");
                 return false;
             }
             break;
@@ -72,7 +73,8 @@ static bool parse_options(int argc, char* argv[], Options* opts) {
     }
 
     if (optind >= argc) {
-        fprintf(stderr, "error: no ROM file specified\n\n");
+        LOG_ERROR("no ROM file specified");
+        fprintf(stderr, "\n");
         print_usage(argv[0]);
         return false;
     }
@@ -114,7 +116,7 @@ int main(int argc, char* argv[]) {
     int window_height = view_h * opts.scale;
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
-        printf("error: SDL initialisation failed: %s\n", SDL_GetError());
+        LOG_ERROR("SDL initialisation failed: %s", SDL_GetError());
         return 1;
     }
 
@@ -122,7 +124,7 @@ int main(int argc, char* argv[]) {
         SDL_CreateWindow("NES", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                          window_width, window_height, 0);
     if (!window) {
-        printf("error: SDL window creation failed: %s\n", SDL_GetError());
+        LOG_ERROR("SDL window creation failed: %s", SDL_GetError());
         SDL_Quit();
         return 1;
     }
@@ -130,7 +132,7 @@ int main(int argc, char* argv[]) {
     SDL_Renderer* renderer =
         SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
-        printf("error: renderer creation failed: %s\n", SDL_GetError());
+        LOG_ERROR("renderer creation failed: %s", SDL_GetError());
         SDL_DestroyWindow(window);
         SDL_Quit();
         return 1;
@@ -140,7 +142,7 @@ int main(int argc, char* argv[]) {
         SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
                           SDL_TEXTUREACCESS_STREAMING, NES_WIDTH, NES_HEIGHT);
     if (!texture) {
-        printf("error: texture creation failed: %s\n", SDL_GetError());
+        LOG_ERROR("texture creation failed: %s", SDL_GetError());
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
         SDL_Quit();
@@ -149,7 +151,7 @@ int main(int argc, char* argv[]) {
 
     NES* nes = nes_create();
     if (!nes) {
-        printf("error: could not create NES\n");
+        LOG_ERROR("could not create NES");
         SDL_DestroyTexture(texture);
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
@@ -158,7 +160,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (!nes_load_cartridge(nes, opts.rom_path)) {
-        printf("error: could not load cartridge: %s\n", opts.rom_path);
+        LOG_ERROR("could not load cartridge: %s", opts.rom_path);
         nes_destroy(nes);
         SDL_DestroyTexture(texture);
         SDL_DestroyRenderer(renderer);
@@ -182,7 +184,7 @@ int main(int argc, char* argv[]) {
         want.userdata = &nes->apu;
         audio_dev = SDL_OpenAudioDevice(NULL, 0, &want, NULL, 0);
         if (audio_dev == 0) {
-            printf("warning: could not open audio: %s\n", SDL_GetError());
+            LOG_WARN("could not open audio: %s", SDL_GetError());
         } else {
             SDL_PauseAudioDevice(audio_dev, 0);
         }

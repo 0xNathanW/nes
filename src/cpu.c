@@ -1,5 +1,6 @@
 #include "cpu.h"
 #include "bus.h"
+#include "log.h"
 #include <stdint.h>
 #include <stdio.h>
 
@@ -139,16 +140,16 @@ uint16_t cpu_get_op_addr(CPU_6502* cpu, AddressingMode mode) {
         return bus_read_word(cpu->bus, ptr);
 
     default:
-        printf("unimplemented addressing mode: %d\n", mode);
+        LOG_WARN("unimplemented addressing mode: %d", mode);
         return 0;
     }
 }
 
 void cpu_trace(CPU_6502* cpu) {
     uint8_t opcode = bus_read_byte(cpu->bus, cpu->regs.pc);
-    printf("%04X  %02X  A:%02X X:%02X Y:%02X P:%02X SP:%02X\n", cpu->regs.pc,
-           opcode, cpu->regs.acc, cpu->regs.x, cpu->regs.y, cpu->regs.p,
-           cpu->regs.sp);
+    LOG_DEBUG("%04X  %02X  A:%02X X:%02X Y:%02X P:%02X SP:%02X", cpu->regs.pc,
+              opcode, cpu->regs.acc, cpu->regs.x, cpu->regs.y, cpu->regs.p,
+              cpu->regs.sp);
 }
 
 static void update_zn_flags(CPU_6502* cpu, uint8_t value) {
@@ -1065,8 +1066,8 @@ int cpu_step(CPU_6502* cpu) {
         break;
 
     default:
-        printf("unimplemented opcode: %02X at %04X\n", opcode,
-               cpu->regs.pc - 1);
+        LOG_WARN("unimplemented opcode: %02X at %04X", opcode,
+                 cpu->regs.pc - 1);
         break;
     }
 
